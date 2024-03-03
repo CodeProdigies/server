@@ -65,5 +65,16 @@ namespace prod_server.Classes
         {
             return ApiResponse<object>(StatusCodes.Status404NotFound, message, null);
         }
+
+
+        protected IResponse<T> UnexpectedError<T>(string message, T payload = default)
+        {
+            return ApiResponse<T>(StatusCodes.Status500InternalServerError, message, payload);
+        }
+
+        protected IResponse<object> UnexpectedError(string message = "Server Error")
+        {
+            return ApiResponse<object>(StatusCodes.Status500InternalServerError, message, null);
+        }
     }
 }
