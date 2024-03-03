@@ -8,6 +8,14 @@ namespace prod_server.Classes
 
     public class BaseController : ControllerBase
     {
+        public class IResponse<T>
+        {
+            public int StatusCode { get; set; }
+            public string Message { get; set; }
+            public T? Payload { get; set; }
+
+        }
+
         protected IResponse<T> ApiResponse<T>(int statusCode, string message, T? payload = default)
         {
             return new IResponse<T>
