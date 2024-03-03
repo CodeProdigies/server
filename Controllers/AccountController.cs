@@ -9,14 +9,10 @@ namespace prod_server.Controllers
     [ApiController]
     public class AccountController : BaseController
     {
-        /// <summary>
-        /// Login user
-        /// </summary>
-        /// <param name="loginModel"></param>
         [HttpPost("login")]
         [ProducesResponseType(typeof(IResponse<>), 401)]
-        [ProducesResponseType(typeof(IResponse<>), 200)] 
-        public IActionResult Login(LoginModel loginModel)
+        [ProducesResponseType(typeof(IResponse<>), 200)]
+        public IResponse<object> Login(LoginModel loginModel)
         {
             return Unauthorized();       
         }
@@ -24,11 +20,10 @@ namespace prod_server.Controllers
         [HttpPost("register")]
         [ProducesResponseType(typeof(IResponse<>), 401)]
         [ProducesResponseType(typeof(IResponse<Account>), 200)]
-        public IActionResult Register(RegisterModel registerModel)
+        public IResponse<Account> Register(RegisterModel registerModel)
         {
             //Should return auth token.
-            return Ok(new Account(registerModel));
+            return Ok("Registered Succesfully", new Account(registerModel));
         }
-
     }
 }
