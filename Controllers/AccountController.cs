@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using prod_server.Classes;
 using prod_server.Classes.Others;
 using prod_server.Entities;
@@ -6,7 +7,8 @@ using prod_server.Services.DB;
 
 namespace prod_server.Controllers
 {
-    [Route("api/account")]
+    [AllowAnonymous]
+    [Route("api/[controller]")]
     [ApiController]
     public class AccountController : BaseController
     {
@@ -17,7 +19,7 @@ namespace prod_server.Controllers
             _accountService = accountService;
         }
 
-        [HttpPost("login")]
+        [HttpPost("/account/login")]
         [ProducesResponseType(typeof(IResponse<>), 401)]
         [ProducesResponseType(typeof(IResponse<>), 200)]
         public async Task<IResponse<string>> Login(LoginModel loginModel)
@@ -36,7 +38,7 @@ namespace prod_server.Controllers
             return Ok<string>("login_success", account.CreateJwtToken());
         }
 
-        [HttpPost("register")]
+        [HttpPost("/register")]
         [ProducesResponseType(typeof(IResponse<>), 401)]
         [ProducesResponseType(typeof(IResponse<Account>), 200)]
         public async Task<IResponse<string>> Register(RegisterModel registerModel)
