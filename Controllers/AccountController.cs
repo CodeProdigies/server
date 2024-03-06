@@ -38,7 +38,7 @@ namespace prod_server.Controllers
             return Ok<string>("login_success", account.CreateJwtToken());
         }
 
-        [HttpPost("/register")]
+        [HttpPost("/account/signup")]
         [ProducesResponseType(typeof(IResponse<>), 401)]
         [ProducesResponseType(typeof(IResponse<Account>), 200)]
         public async Task<IResponse<string>> Register(RegisterModel registerModel)
