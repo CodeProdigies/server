@@ -30,6 +30,7 @@ builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
 }).AddJwtBearer("Accounts", options =>
 {
     options.RequireHttpsMetadata = false; // Only in DEV! Remove for prod.
@@ -37,10 +38,13 @@ builder.Services.AddAuthentication(x =>
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
+       
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("33d7b68dc5eab0934f001fc5801bd234a255aa0e7314cb43619e5604001132ece77b4a73f0fd8c67d89e43662d2d968d2b18bd20c8dbc78ac5512ccf41f381cb")),
         ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateLifetime = true,
+        ValidateAudience = false,
+        ValidateIssuerSigningKey = true,
+
     };
 });
 
@@ -50,10 +54,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAccountService, AccountService>();
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -85,6 +91,7 @@ app.UseCors(builder =>
 });
 
 app.UsePathBase(new PathString("/api"));// Adding /api prefix to all endpoints.
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
