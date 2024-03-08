@@ -14,5 +14,16 @@ namespace prod_server
         {
             return BCryptNet.HashPassword(password);
         }
+
+        public static string GenerateRandomNumber(int length)
+        {
+            Random random = new Random();
+            string number = "";
+            for (int i = 0; i < length; i++)
+            {
+                number += random.Next(0, 9).ToString();
+            }
+            return number;
+        }
     }
 }

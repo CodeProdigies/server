@@ -3,8 +3,6 @@ using prod_server.Classes.Others;
 using prod_server.database;
 using prod_server.Entities;
 using System.Security.Claims;
-using IdentityModel;
-
 
 namespace prod_server.Services.DB
 {
@@ -13,7 +11,8 @@ namespace prod_server.Services.DB
         Task<Account?> Create(RegisterModel registerModel);
         Task<Account?> GetByUsername(string username);
         Task<Account?> GetByEmail(string email);
-        Task<Account?> GetRequestor();
+        Task<Account?> GetRequestor(string userId);
+        Task<Account?> GetRequestor(int userId);
     }
     public class AccountService : IAccountService
     {
@@ -52,18 +51,13 @@ namespace prod_server.Services.DB
             return _database.Accounts.FirstOrDefaultAsync(x => x.Email == email);
         }
 
-        public async Task<Account?> GetRequestor()
+        public Task<Account?> GetRequestor(string userId)
         {
-            string? userId = null;
-            if (_contextAccessor.HttpContext != null)
-            {
-                userId = _contextAccessor.HttpContext.User.FindFirstValue(JwtClaimTypes.Subject);
-                userId = _contextAccessor.HttpContext.User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
-            }
-
-            if (userId != null) return await _database.Accounts.FirstOrDefaultAsync(u => u.Id == int.Parse(userId));
-
-            return null;
+           return GetRequestor(int.Parse(userId));
+        }
+        public Task<Account?> GetRequestor(int userId)
+        {
+           return _database.Accounts.FirstOrDefaultAsync(u => u.Id == userId);
         }
     }
 }

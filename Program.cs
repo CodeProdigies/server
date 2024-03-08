@@ -56,6 +56,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddHttpContextAccessor();
 

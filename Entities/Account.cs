@@ -1,5 +1,4 @@
-﻿using IdentityModel;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using prod_server.Classes.Others;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,7 +8,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using BCryptNet = BCrypt.Net.BCrypt;
-
 
 namespace prod_server.Entities
 {
@@ -59,7 +57,7 @@ namespace prod_server.Entities
         {
             List<Claim> claims = new List<Claim>
             {
-                new Claim(JwtClaimTypes.Subject, Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("33d7b68dc5eab0934f001fc5801bd234a255aa0e7314cb43619e5604001132ece77b4a73f0fd8c67d89e43662d2d968d2b18bd20c8dbc78ac5512ccf41f381cb"));
