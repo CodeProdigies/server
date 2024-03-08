@@ -11,7 +11,7 @@ namespace prod_server.Services.DB
         public Task<Token> Create(Token token);
         public Task<Token> Create(Account account);
         public Task<Token?> GetById(Guid id);
-        public Task<Token?> GetByIdAndEmail(Guid id, string email)
+        public Task<Token?> GetByIdAndEmail(Guid id, string email);
     }
   
     public class TokenService : ITokenService
