@@ -1,0 +1,64 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using prod_server.Classes;
+using prod_server.Classes.Others;
+using prod_server.Entities;
+using prod_server.Migrations;
+using prod_server.Services.DB;
+using System.Security.Claims;
+
+namespace prod_server.Controllers
+{
+    [Authorize(AuthenticationSchemes = "Accounts")]
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductsController : BaseController
+    {
+        private readonly IAccountService _accountService;
+        private readonly IProductService _productService;
+
+        public ProductsController(IAccountService accountService, IProductService productService)
+        {
+            _accountService = accountService;
+            _productService = productService;
+        }
+
+        [AllowAnonymous]
+        [HttpGet("/products/{id}")]
+        [ProducesResponseType(typeof(IResponse<>), 404)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<IResponse<Product?>> GetProduct(Guid id)
+        {
+
+            string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var account = await _accountService.GetByUsername(userId);
+            
+            var product = await _productService.GetById(id);
+
+            if (product == null) return NotFound<Product?>("failed_retrieve_product");
+
+            return Ok<Product?>("product_retrieved_successfully", product);
+        }
+
+        [HttpPost("/products")]
+        [ProducesResponseType(typeof(IResponse<product>), 400)]
+        [ProducesResponseType(typeof(IResponse<product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<IResponse<Product>> Create(Product? product)
+        {
+            if (product == null) return BadRequest<Product>("failed_create_product");
+            if (product.Id != Guid.Empty) return BadRequest<Product>("failed_create_product");
+
+            string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var account = await _accountService.GetById(userId!);
+            if(account == null) return Unauthorized<Product>("failed_retrieve_account");
+
+            // Check if user is admin. When we do the roles.
+
+            var newProduct = await _productService.Create(product);
+            if (newProduct == null) return UnexpectedError<Product>("failed_create_product");
+
+            return Ok<Product>("product_created_successfully", newProduct);
+        }
+    }
+}

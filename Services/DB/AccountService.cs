@@ -11,8 +11,8 @@ namespace prod_server.Services.DB
         Task<Account?> Create(RegisterModel registerModel);
         Task<Account?> GetByUsername(string username);
         Task<Account?> GetByEmail(string email);
-        Task<Account?> GetRequestor(string userId);
-        Task<Account?> GetRequestor(int userId);
+        Task<Account?> GetById(string userId);
+        Task<Account?> GetById(int userId);
     }
     public class AccountService : IAccountService
     {
@@ -51,11 +51,11 @@ namespace prod_server.Services.DB
             return _database.Accounts.FirstOrDefaultAsync(x => x.Email == email);
         }
 
-        public Task<Account?> GetRequestor(string userId)
+        public Task<Account?> GetById(string userId)
         {
-           return GetRequestor(int.Parse(userId));
+           return GetById(int.Parse(userId));
         }
-        public Task<Account?> GetRequestor(int userId)
+        public Task<Account?> GetById(int userId)
         {
            return _database.Accounts.FirstOrDefaultAsync(u => u.Id == userId);
         }

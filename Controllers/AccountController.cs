@@ -78,7 +78,7 @@ namespace prod_server.Controllers
             string? userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Unauthorized<Account>("User not found");
 
-            var account = await _accountService.GetRequestor(userId);
+            var account = await _accountService.GetById(userId);
             if (account == null) return NotFound<Account>("Account not found");
 
             // Clear account
