@@ -53,6 +53,27 @@ namespace prod_server.Entities
         [MaxLength(50)]
         public string? LastName { get; set; }
 
+        [Column("createdAt")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [Column("updatedAt")]
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+        [Column("address")]
+        public string Address { get; set; }
+        [Column("city")]
+        public string City { get; set; }
+        [Column("state")]
+        public string State { get; set; }
+        [Column("zipCode")]
+        public string ZipCode { get; set; }
+        [Column("country")]
+        public string Country { get; set; }
+        [Column("phone")]
+        public string Phone { get; set; }
+        [Column("mobile")]
+        public string Mobile{ get; set; }
+
+
         public string CreateJwtToken()
         {
             List<Claim> claims = new List<Claim>
