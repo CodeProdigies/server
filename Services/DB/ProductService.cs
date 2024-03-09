@@ -10,6 +10,8 @@ namespace prod_server.Services.DB
     {
         public Task<Product> Create(Product product);
         public Task<Product?> GetById(Guid id);
+        public Task<Product?> GetBySKU(string sku);
+        public Task<List<Product>> GetAll();
     }
   
     public class ProductService : IProductService
@@ -31,6 +33,14 @@ namespace prod_server.Services.DB
         public Task<Product?> GetById(Guid id)
         {
             return _database.Products.FirstOrDefaultAsync(x => x.Id == id);
+        }
+        public Task<Product?> GetBySKU(string sku)
+        {
+            return _database.Products.FirstOrDefaultAsync(x => x.SKU == sku);
+        }
+        public Task<List<Product>> GetAll()
+        {
+            return _database.Products.ToListAsync();
         }
         
     }

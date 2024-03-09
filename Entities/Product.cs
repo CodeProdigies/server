@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace prod_server.Entities
 {
@@ -9,7 +10,7 @@ namespace prod_server.Entities
     {
         [Key]
         [Column("id")]
-        public Guid Id { get; set; } = new Guid();
+        public Guid? Id { get; set; } = Guid.NewGuid();
 
         [Required]
         [Column("sku")]
@@ -21,6 +22,7 @@ namespace prod_server.Entities
         public string Description { get; set; }
         [Column("price")]
         public decimal Price { get; set; }
+        [AllowNull]
         [Column("image")]
         public string? Image { get; set; }
         [Column("category")]

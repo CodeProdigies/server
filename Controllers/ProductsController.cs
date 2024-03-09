@@ -47,7 +47,6 @@ namespace prod_server.Controllers
         public async Task<IResponse<Product>> Create(Product? product)
         {
             if (product == null) return BadRequest<Product>("failed_create_product");
-            if (product.Id != Guid.Empty) return BadRequest<Product>("failed_create_product");
 
             string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var account = await _accountService.GetById(userId!);
@@ -59,6 +58,25 @@ namespace prod_server.Controllers
             if (newProduct == null) return UnexpectedError<Product>("failed_create_product");
 
             return Ok<Product>("product_created_successfully", newProduct);
+        }
+
+        [HttpGet("/products")]
+        [ProducesResponseType(typeof(IResponse<product>), 400)]
+        [ProducesResponseType(typeof(IResponse<product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<IResponse<List<Product>>> GetAllProducts(Product? product)
+        {
+
+            string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var account = await _accountService.GetById(userId!);
+            if (account == null) return Unauthorized<List<Product>>("failed_retrieve_account");
+
+            // Check if user is admin. When we do the roles.
+
+            var products = await _productService.GetAll();
+            if (products == null) return UnexpectedError<List<Product>>("failed_retrieve_product");
+
+            return Ok<List<Product>>("products_retrieved_successfully", products);
         }
     }
 }
