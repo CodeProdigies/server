@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using prod_server.Classes;
-using prod_server.Classes.Others;
 using prod_server.Entities;
 using prod_server.Migrations;
 using prod_server.Services.DB;
@@ -50,7 +49,7 @@ namespace prod_server.Controllers
 
             string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var account = await _accountService.GetById(userId!);
-            if(account == null) return Unauthorized<Product>("failed_retrieve_account");
+            if(account == null) return Unauthorized<Product>("failed_create_account");
 
             // Check if user is admin. When we do the roles.
 
@@ -72,14 +71,32 @@ namespace prod_server.Controllers
 
             string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var account = await _accountService.GetById(userId!);
-            if (account == null) return Unauthorized<Product>("failed_retrieve_account");
+            if (account == null) return Unauthorized<Product>("failed_updat3e_account");
 
             // Check if user is admin. When we do the roles.
 
             var newProduct = await _productService.Update(product);
-            if (newProduct == null) return UnexpectedError<Product>("failed_create_product");
+            if (newProduct == null) return UnexpectedError<Product>("failed_update_product");
 
-            return Ok<Product>("product_created_successfully", product);
+            return Ok<Product>("product_update_successfully", product);
+        }
+
+        [HttpDelete("/products/{id}")]
+        [ProducesResponseType(typeof(IResponse<product>), 400)]
+        [ProducesResponseType(typeof(IResponse<product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<IResponse<string>> Delete(Guid id)
+        {
+
+            string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var account = await _accountService.GetById(userId!);
+            if (account == null) return Unauthorized<string>("failed_delete_account");
+
+            // Check if user is admin. When we do the roles.
+
+            var newProduct = await _productService.Delete(id);
+
+            return Ok<string>("product_deleted_successfully");
         }
 
         [HttpGet("/products")]

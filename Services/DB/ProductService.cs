@@ -13,8 +13,9 @@ namespace prod_server.Services.DB
         public Task<Product?> GetBySKU(string sku);
         public Task<List<Product>> GetAll();
         public Task<int> Update(Product product);
+        public Task<int> Delete(Guid id);
     }
-  
+
     public class ProductService : IProductService
     {
         private readonly Context _database;
@@ -30,7 +31,7 @@ namespace prod_server.Services.DB
             await _database.SaveChangesAsync();
             return product;
         }
-        
+
         public Task<Product?> GetById(Guid id)
         {
             return _database.Products.FirstOrDefaultAsync(x => x.Id == id);
@@ -51,5 +52,16 @@ namespace prod_server.Services.DB
             return _database.SaveChangesAsync();
         }
 
+        public async Task<int> Delete(Guid id)
+        {
+            var productToDelete = await _database.Products.FindAsync(id);
+
+            if (productToDelete != null)
+            {
+                _database.Products.Remove(productToDelete);
+                return await _database.SaveChangesAsync();
+            }
+            return 0; // Return 0 if the product with the specified id is not found
+        }
     }
 }
