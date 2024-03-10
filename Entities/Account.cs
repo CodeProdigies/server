@@ -32,11 +32,10 @@ namespace prod_server.Entities
         [MaxLength(50)]
         public string Username { get; set; }
 
-        [Required]
         [JsonIgnore]
         [Column("password")]
         /// <summary> Password is hashed and salted. </summary>
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [Required]
         [Column("email_address")]
@@ -97,6 +96,24 @@ namespace prod_server.Entities
         public bool ValidatePassword (string password)
         {
             return BCryptNet.Verify(password, Password);
+        }
+
+        public void UpdateFromAnotherAccount(Account acc)
+        {
+            this.Username = acc.Username;
+            this.Email = acc.Email;
+            this.FirstName = acc.FirstName;
+            this.LastName = acc.LastName;
+            this.Phone = acc.Phone;
+            this.Mobile = acc.Mobile;
+            this.Address = acc.Address;
+            this.City = acc.City;
+            this.State = acc.State;
+            this.ZipCode = acc.ZipCode;
+            this.Country = acc.Country;
+                
+            this.UpdatedAt = DateTime.UtcNow;
+                
         }
     }
 }

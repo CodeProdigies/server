@@ -144,7 +144,7 @@ namespace prod_server.Controllers
 
         [HttpPut("/account/changepassword")]
         [ProducesResponseType(typeof(IResponse<string>), 200)]
-        public async Task<IResponse<bool>> ChangePassword(string previousPAssword,  string newPassword )
+        public async Task<IResponse<bool>> ChangePassword(ChangePasswordRequestModel request )
         {
             string? userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Unauthorized<bool>("failed_update_password", false);
@@ -152,10 +152,10 @@ namespace prod_server.Controllers
             var user = await _accountService.GetById(userId);
             if (user == null) return BadRequest<bool>("failed_update_password", false);
 
-            var isPreviousPasswordCorrect = user.ValidatePassword(previousPAssword);
-            if(!isPreviousPasswordCorrect) return BadRequest<bool>("failed_update_password", false);
+            var isPreviousPasswordCorrect = user.ValidatePassword(request.OldPassword);
+            if(!isPreviousPasswordCorrect) return BadRequest<bool>("failed_update_password_incorrect_previous", false);
 
-            user.Password = Utilities.HashPassword(newPassword);
+            user.Password = Utilities.HashPassword(request.NewPassword);
             await _accountService.Update(user);
 
             return Ok<bool>("password_updated_successfully", true);
@@ -173,11 +173,9 @@ namespace prod_server.Controllers
             var dbAccount = await _accountService.GetById(userId);
             if (dbAccount == null) return BadRequest<bool>("failed_update_password", false);
 
-            account.Password = dbAccount.Password;
-            account.CreatedAt = dbAccount.CreatedAt;
-            account.UpdatedAt = DateTime.UtcNow;
+            dbAccount.UpdateFromAnotherAccount(account);
 
-            await _accountService.Update(account);
+            await _accountService.Update(dbAccount);
 
             return Ok<bool>("account_updated_successfully", true);
         }
