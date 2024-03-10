@@ -12,6 +12,7 @@ namespace prod_server.Services.DB
         public Task<Product?> GetById(Guid id);
         public Task<Product?> GetBySKU(string sku);
         public Task<List<Product>> GetAll();
+        public Task<int> Update(Product product);
     }
   
     public class ProductService : IProductService
@@ -42,6 +43,13 @@ namespace prod_server.Services.DB
         {
             return _database.Products.ToListAsync();
         }
-        
+        public Task<int> Update(Product product)
+        {
+            // Assuming product is tracked by the context (either attached or loaded)
+            _database.Products.Update(product);
+
+            return _database.SaveChangesAsync();
+        }
+
     }
 }

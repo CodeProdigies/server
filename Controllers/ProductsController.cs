@@ -60,6 +60,28 @@ namespace prod_server.Controllers
             return Ok<Product>("product_created_successfully", newProduct);
         }
 
+        [HttpPut("/products")]
+        [ProducesResponseType(typeof(IResponse<product>), 400)]
+        [ProducesResponseType(typeof(IResponse<product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<IResponse<Product>> Update(Product? product)
+        {
+            if (product == null) return BadRequest<Product>("failed_update_product");
+            if (product.Id == null) return BadRequest<Product>("failed_update_product");
+
+
+            string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var account = await _accountService.GetById(userId!);
+            if (account == null) return Unauthorized<Product>("failed_retrieve_account");
+
+            // Check if user is admin. When we do the roles.
+
+            var newProduct = await _productService.Update(product);
+            if (newProduct == null) return UnexpectedError<Product>("failed_create_product");
+
+            return Ok<Product>("product_created_successfully", product);
+        }
+
         [HttpGet("/products")]
         [ProducesResponseType(typeof(IResponse<product>), 400)]
         [ProducesResponseType(typeof(IResponse<product>), 401)]
