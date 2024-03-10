@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using prod_server.Classes;
 using prod_server.Classes.Others;
 using prod_server.Entities;
@@ -35,8 +36,8 @@ namespace prod_server.Controllers
 
             if (account == null)
                 account = await _accountService.GetByEmail(loginModel.Username);
-            
-            if(account == null) return Unauthorized<string>("Invalid Username or Password");
+
+            if (account == null) return Unauthorized<string>("Invalid Username or Password");
 
             if (!account.ValidatePassword(loginModel.Password))
                 return Unauthorized<string>("Invalid Username or Password");
@@ -51,8 +52,8 @@ namespace prod_server.Controllers
         public async Task<IResponse<string>> Register(RegisterModel registerModel)
         {
             //Should return auth token.
-            if(!registerModel.isPasswordValid()) return BadRequest<string>("Password is not valid");
-            if(!registerModel.IsValidEmail()) return BadRequest<string>("Email address is invalid");
+            if (!registerModel.isPasswordValid()) return BadRequest<string>("Password is not valid");
+            if (!registerModel.IsValidEmail()) return BadRequest<string>("Email address is invalid");
 
             if (await _accountService.GetByUsername(registerModel.Username) != null)
                 return BadRequest<string>("Username already exists");
@@ -69,20 +70,31 @@ namespace prod_server.Controllers
             return Ok<string>("register_success", createdAccount.CreateJwtToken());
         }
 
-        [HttpGet("/account/myuser")]
+        /// <summary>
+        /// If no id is provided, the id will be grabbed from the token and return the requestor user data.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("/account/{id?}")]
         [ProducesResponseType(typeof(IResponse<>), 401)]
         [ProducesResponseType(typeof(IResponse<>), 404)]
         [ProducesResponseType(typeof(IResponse<Account>), 200)]
-        public async Task<IResponse<Account>> GetMyUser()
+        public async Task<IResponse<Account>> GetMyUser(int? id)
         {
-            string? userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized<Account>("User not found");
+            if(id == null)
+            {
+                // If no id is provided, get the id from the token.
+                // It'll return it's own user data.
+                string? userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null) return Unauthorized<Account>("retrieve_account_failed");
+                id = int.Parse(userId);
+            }
 
-            var account = await _accountService.GetById(userId);
-            if (account == null) return NotFound<Account>("Account not found");
+            var account = await _accountService.GetById(id.Value);
+            if (account == null) return NotFound<Account>("retrieve_account_failed");
 
             // Clear account
-            return Ok<Account>("account_found", account);
+            return Ok<Account>("retrieve_account_successful", account);
         }
 
         [AllowAnonymous]
@@ -95,7 +107,7 @@ namespace prod_server.Controllers
             // This part of the code needs runs on a different thread
             // This is to prevent the client from waiting for the email to be sent
             // OR knowing if user exists or not because of the time it takes to send an email.
-            if (user != null) 
+            if (user != null)
             {
                 Console.WriteLine("AAA");
                 var token = await _tokenService.Create(user);
@@ -114,10 +126,10 @@ namespace prod_server.Controllers
         {
             var token = await _tokenService.GetByIdAndEmail(Guid.Parse(otp), email);
 
-            if(token == null) return BadRequest<string>("Invalid OTP");
-            if(token.ExpiresAt < DateTime.UtcNow) return BadRequest<string>("OTP has expired");
+            if (token == null) return BadRequest<string>("Invalid OTP");
+            if (token.ExpiresAt < DateTime.UtcNow) return BadRequest<string>("OTP has expired");
 
-            switch(token.Type)
+            switch (token.Type)
             {
                 case OTPType.ForgotPassword:
                     // Reset password?
@@ -128,6 +140,62 @@ namespace prod_server.Controllers
             }
 
             return Ok<string>("otp_verified", "account");
+        }
+
+        [HttpPut("/account/changepassword")]
+        [ProducesResponseType(typeof(IResponse<string>), 200)]
+        public async Task<IResponse<bool>> ChangePassword(string previousPAssword,  string newPassword )
+        {
+            string? userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized<bool>("failed_update_password", false);
+
+            var user = await _accountService.GetById(userId);
+            if (user == null) return BadRequest<bool>("failed_update_password", false);
+
+            var isPreviousPasswordCorrect = user.ValidatePassword(previousPAssword);
+            if(!isPreviousPasswordCorrect) return BadRequest<bool>("failed_update_password", false);
+
+            user.Password = Utilities.HashPassword(newPassword);
+            await _accountService.Update(user);
+
+            return Ok<bool>("password_updated_successfully", true);
+        }
+
+        [HttpPut("/account")]
+        [ProducesResponseType(typeof(IResponse<string>), 200)]
+        public async Task<IResponse<bool>> Update(Account account)
+        {
+
+            string? userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized<bool>("failed_update_account", false);
+            if(userId != account.Id.ToString()) return Unauthorized<bool>("failed_update_account", false);   // Or check if is admin.
+
+            var dbAccount = await _accountService.GetById(userId);
+            if (dbAccount == null) return BadRequest<bool>("failed_update_password", false);
+
+            account.Password = dbAccount.Password;
+            account.CreatedAt = dbAccount.CreatedAt;
+            account.UpdatedAt = DateTime.UtcNow;
+
+            await _accountService.Update(account);
+
+            return Ok<bool>("account_updated_successfully", true);
+        }
+
+        [HttpDelete("/account/{id}")]
+        [ProducesResponseType(typeof(IResponse<string>), 200)]
+        public async Task<IResponse<bool>> Update(Guid id)
+        {
+
+            string? userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized<bool>("failed_update_account", false);
+            // Check if admin.
+
+            var deleted = await _accountService.Delete(id);
+
+            if (deleted == 0) return BadRequest<bool>("failed_delete_account_notfound", false);
+
+            return Ok<bool>("account_updated_successfully", true);
         }
     }
 }

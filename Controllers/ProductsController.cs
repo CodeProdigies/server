@@ -96,11 +96,13 @@ namespace prod_server.Controllers
 
             var newProduct = await _productService.Delete(id);
 
+            if (newProduct == 0) return BadRequest<string>("failed_delete_product_notfound");
+
             return Ok<string>("product_deleted_successfully");
         }
 
         [HttpGet("/products")]
-        [ProducesResponseType(typeof(IResponse<product>), 400)]
+        [ProducesResponseType(typeof(IResponse<product>), 500)]
         [ProducesResponseType(typeof(IResponse<product>), 401)]
         [ProducesResponseType(typeof(IResponse<Product>), 200)]
         public async Task<IResponse<List<Product>>> GetAllProducts(Product? product)

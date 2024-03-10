@@ -2,6 +2,7 @@
 using prod_server.Classes.Others;
 using prod_server.database;
 using prod_server.Entities;
+using prod_server.Migrations;
 using System.Security.Claims;
 
 namespace prod_server.Services.DB
@@ -13,6 +14,8 @@ namespace prod_server.Services.DB
         Task<Account?> GetByEmail(string email);
         Task<Account?> GetById(string userId);
         Task<Account?> GetById(int userId);
+        Task<int> Update(Account account);
+        Task<int> Delete(Guid id);
     }
     public class AccountService : IAccountService
     {
@@ -58,6 +61,26 @@ namespace prod_server.Services.DB
         public Task<Account?> GetById(int userId)
         {
            return _database.Accounts.FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+        public Task<int> Update(Account account)
+        {
+            // Assuming product is tracked by the context (either attached or loaded)
+            _database.Accounts.Update(account);
+
+            return _database.SaveChangesAsync();
+        }
+
+        public async Task<int> Delete(Guid id)
+        {
+            var accountToDelete = await _database.Accounts.FindAsync(id);
+
+            if (accountToDelete != null)
+            {
+                _database.Accounts.Remove(accountToDelete);
+                return await _database.SaveChangesAsync();
+            }
+            return 0; // Return 0 if the product with the specified id is not found
         }
     }
 }
