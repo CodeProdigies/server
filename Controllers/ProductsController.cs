@@ -101,16 +101,13 @@ namespace prod_server.Controllers
             return Ok<string>("product_deleted_successfully");
         }
 
+        [AllowAnonymous]
         [HttpGet("/products")]
         [ProducesResponseType(typeof(IResponse<product>), 500)]
         [ProducesResponseType(typeof(IResponse<product>), 401)]
         [ProducesResponseType(typeof(IResponse<Product>), 200)]
         public async Task<IResponse<List<Product>>> GetAllProducts(Product? product)
         {
-
-            string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            var account = await _accountService.GetById(userId!);
-            if (account == null) return Unauthorized<List<Product>>("failed_retrieve_account");
 
             // Check if user is admin. When we do the roles.
 
