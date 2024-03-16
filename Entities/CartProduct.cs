@@ -13,6 +13,9 @@ namespace prod_server.Entities
         [ForeignKey("Quote")]
         [Column("QuoteId")]
         public Guid? QuoteId { get; set; }
+
+        [JsonIgnore]
+        [NotMapped]
         public virtual Quote? Quote{ get; set; }
         
         public virtual Product? Product { get; set; }

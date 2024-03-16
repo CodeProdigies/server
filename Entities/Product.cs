@@ -28,7 +28,7 @@ namespace prod_server.Entities
         public string? Image { get; set; }
         [Column("category")]
         public ProductsCategory? Category { get; set; }
-        [JsonIgnore]
+        [NotMapped]
         public virtual List<CartProduct>? CartProducts { get; set; }
         public Product() { }
 
