@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
@@ -11,7 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 // DB Connection
 // TODO: Move the connection string to the ENV Variables.
 
-var cnString = new NpgsqlConnectionStringBuilder("Host=ruby.db.elephantsql.com;Database=gabgrurw;Username=gabgrurw;Password=wz2LOtbzt0wG_BFFGzC-Wp0Tpwrrd4nC");
+
+var cnString = new NpgsqlConnectionStringBuilder("Host=drona.db.elephantsql.com;Database=eamuzyum;Username=eamuzyum;Password=BqSfXHedbxTBB2pbdSqTmrukzagxKhkq");
 builder.Services.AddDbContext<Context>(options =>
 {
     var connectionStringBuilder = new NpgsqlConnectionStringBuilder(cnString.ConnectionString)
@@ -54,10 +56,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//Create 
+builder.Services.AddRateLimiter(RateLimiterOptions =>
+{
+    RateLimiterOptions.AddFixedWindowLimiter("quoteslimit", options =>
+    {
+        options.PermitLimit = 1;
+        options.Window= TimeSpan.FromSeconds(5);
+        options.QueueLimit = 0;
+    });
+});
+
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IQuoteService, QuoteService>();
 
 builder.Services.AddHttpContextAccessor();
 
@@ -73,6 +87,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseRateLimiter();
 
 // SETUP CORS
 
@@ -93,6 +109,7 @@ app.UseCors(builder =>
 });
 
 app.UsePathBase(new PathString("/api"));// Adding /api prefix to all endpoints.
+
 app.UseAuthentication();
 app.UseAuthorization();
 

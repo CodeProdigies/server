@@ -57,20 +57,27 @@ namespace prod_server.Entities
 
         [Column("updatedAt")]
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+        [AllowNull]
         [Column("address")]
-        public string Address { get; set; }
+        public string? Address { get; set; }
+        [AllowNull]
         [Column("city")]
-        public string City { get; set; }
+        public string? City { get; set; }
+        [AllowNull]
         [Column("state")]
-        public string State { get; set; }
+        public string? State { get; set; }
+        [AllowNull]
         [Column("zipCode")]
-        public string ZipCode { get; set; }
+        public string? ZipCode { get; set; }
+        [AllowNull]
         [Column("country")]
-        public string Country { get; set; }
+        public string? Country { get; set; }
+        [AllowNull]
         [Column("phone")]
-        public string Phone { get; set; }
+        public string? Phone { get; set; }
+        [AllowNull]
         [Column("mobile")]
-        public string Mobile{ get; set; }
+        public string? Mobile{ get; set; }
 
 
         public string CreateJwtToken()

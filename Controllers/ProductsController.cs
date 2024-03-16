@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using prod_server.Classes;
 using prod_server.Entities;
-using prod_server.Migrations;
 using prod_server.Services.DB;
 using System.Security.Claims;
 
@@ -40,8 +39,8 @@ namespace prod_server.Controllers
         }
 
         [HttpPost("/products")]
-        [ProducesResponseType(typeof(IResponse<product>), 400)]
-        [ProducesResponseType(typeof(IResponse<product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 400)]
+        [ProducesResponseType(typeof(IResponse<Product>), 401)]
         [ProducesResponseType(typeof(IResponse<Product>), 200)]
         public async Task<IResponse<Product>> Create(Product? product)
         {
@@ -60,8 +59,8 @@ namespace prod_server.Controllers
         }
 
         [HttpPut("/products")]
-        [ProducesResponseType(typeof(IResponse<product>), 400)]
-        [ProducesResponseType(typeof(IResponse<product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 400)]
+        [ProducesResponseType(typeof(IResponse<Product>), 401)]
         [ProducesResponseType(typeof(IResponse<Product>), 200)]
         public async Task<IResponse<Product>> Update(Product? product)
         {
@@ -82,8 +81,8 @@ namespace prod_server.Controllers
         }
 
         [HttpDelete("/products/{id}")]
-        [ProducesResponseType(typeof(IResponse<product>), 400)]
-        [ProducesResponseType(typeof(IResponse<product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 400)]
+        [ProducesResponseType(typeof(IResponse<Product>), 401)]
         [ProducesResponseType(typeof(IResponse<Product>), 200)]
         public async Task<IResponse<string>> Delete(Guid id)
         {
@@ -103,8 +102,8 @@ namespace prod_server.Controllers
 
         [AllowAnonymous]
         [HttpGet("/products")]
-        [ProducesResponseType(typeof(IResponse<product>), 500)]
-        [ProducesResponseType(typeof(IResponse<product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 500)]
+        [ProducesResponseType(typeof(IResponse<Product>), 401)]
         [ProducesResponseType(typeof(IResponse<Product>), 200)]
         public async Task<IResponse<List<Product>>> GetAllProducts(Product? product)
         {

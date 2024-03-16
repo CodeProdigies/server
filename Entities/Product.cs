@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 namespace prod_server.Entities
 {
@@ -27,6 +28,8 @@ namespace prod_server.Entities
         public string? Image { get; set; }
         [Column("category")]
         public ProductsCategory? Category { get; set; }
+        [JsonIgnore]
+        public virtual List<CartProduct>? CartProducts { get; set; }
         public Product() { }
 
         public override string ToString()

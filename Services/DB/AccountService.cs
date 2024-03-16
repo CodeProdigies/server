@@ -2,7 +2,6 @@
 using prod_server.Classes.Others;
 using prod_server.database;
 using prod_server.Entities;
-using prod_server.Migrations;
 using System.Security.Claims;
 
 namespace prod_server.Services.DB
