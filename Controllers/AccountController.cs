@@ -70,6 +70,21 @@ namespace prod_server.Controllers
             return Ok<string>("register_success", createdAccount.CreateJwtToken());
         }
 
+
+        [HttpGet("/account/all")]
+        [ProducesResponseType(typeof(IResponse<>), 401)]
+        [ProducesResponseType(typeof(IResponse<>), 404)]
+        [ProducesResponseType(typeof(IResponse<Account>), 200)]
+        public async Task<IResponse<List<Account>>> GetAllAccounts()
+        {
+
+            var accounts = await _accountService.GetAll();
+            if (accounts == null) return NotFound<List<Account>>("retrieve_account_failed");
+
+            // Clear account
+            return Ok<List<Account>>("retrieve_account_successful", accounts);
+        }
+
         /// <summary>
         /// If no id is provided, the id will be grabbed from the token and return the requestor user data.
         /// </summary>

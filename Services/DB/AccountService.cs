@@ -2,6 +2,7 @@
 using prod_server.Classes.Others;
 using prod_server.database;
 using prod_server.Entities;
+using System.Linq.Expressions;
 using System.Security.Claims;
 
 namespace prod_server.Services.DB
@@ -15,6 +16,7 @@ namespace prod_server.Services.DB
         Task<Account?> GetById(int userId);
         Task<int> Update(Account account);
         Task<int> Delete(Guid id);
+        Task<List<Account>> GetAll(bool includePassword = false);
     }
     public class AccountService : IAccountService
     {
@@ -53,6 +55,18 @@ namespace prod_server.Services.DB
             return _database.Accounts.FirstOrDefaultAsync(x => x.Email == email);
         }
 
+        public Task<List<Account>> GetAll(bool includePassword = false)
+        {
+            IQueryable<Account> query = _database.Accounts;
+
+            if (!includePassword)
+            {
+                query = query.Select(ExcludePassword());
+            }
+
+            return query.ToListAsync();
+        }
+
         public Task<Account?> GetById(string userId)
         {
            return GetById(int.Parse(userId));
@@ -80,6 +94,24 @@ namespace prod_server.Services.DB
                 return await _database.SaveChangesAsync();
             }
             return 0; // Return 0 if the product with the specified id is not found
+        }
+
+        private Expression<Func<Account, Account>> ExcludePassword()
+        {
+            return a => new Account
+            {
+                Id = a.Id,
+                Username = a.Username,
+                Email = a.Email,
+                FirstName = a.FirstName,
+                LastName = a.LastName,
+                CreatedAt = a.CreatedAt,
+                UpdatedAt = a.UpdatedAt,
+                Address = a.Address,
+                City = a.City,
+                State = a.State,    
+                ZipCode = a.ZipCode
+            };
         }
     }
 }
