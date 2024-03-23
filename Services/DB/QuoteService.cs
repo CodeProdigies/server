@@ -10,7 +10,8 @@ namespace prod_server.Services.DB
     {
         public Task<Quote> Create(Quote quote);
         public Task<List<Quote>> GetQuotes();
-        public Task<Quote?> Get(Guid id);   
+        public Task<Quote?> Get(Guid id);
+        public Task Delete(Guid id);
     }
 
     public class QuoteService : IQuoteService
@@ -63,9 +64,16 @@ namespace prod_server.Services.DB
         {
             return GetQuotesWithProducts().FirstOrDefaultAsync(q => q.Id == id);
         }
-            
-        
 
+
+        async public Task Delete(Guid id)
+        {
+            var quote = _database.Quotes.FirstOrDefault(quote => quote.Id == id);
+            if (quote == null) throw new Exception("Quote not found.");
+
+            _database.Remove(quote);
+            await _database.SaveChangesAsync();
+        }
 
     }
 }

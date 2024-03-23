@@ -29,7 +29,8 @@ namespace prod_server.Controllers
                 await _quoteService.Create(quote);
                 return Ok<string>("quote_received");
 
-            }catch (Exception e)
+            }
+            catch (Exception e)
             {
                 return new IResponse<string>();
             }
@@ -42,7 +43,7 @@ namespace prod_server.Controllers
             try
             {
                 var quotes = await _quoteService.GetQuotes();
-                return Ok<List<Quote>> ("quote_received", quotes);
+                return Ok<List<Quote>>("quote_received", quotes);
 
             }
             catch (Exception e)
@@ -64,6 +65,22 @@ namespace prod_server.Controllers
             catch (Exception e)
             {
                 return new IResponse<Quote>();
+            }
+
+        }
+
+        [HttpDelete("/quote/{id}")]
+        public async Task<IResponse<String>> DeleteQuote(Guid id)
+        {
+            try
+            {
+                await _quoteService.Delete(id);
+                return Ok<String>("quote_received");
+
+            }
+            catch (Exception e)
+            {
+                return NotFound<String>(e.Message);
             }
 
         }
