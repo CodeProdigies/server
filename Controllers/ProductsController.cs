@@ -30,7 +30,7 @@ namespace prod_server.Controllers
 
             string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var account = await _accountService.GetByUsername(userId);
-            
+
             var product = await _productService.GetById(id);
 
             if (product == null) return NotFound<Product?>("failed_retrieve_product");
@@ -48,7 +48,7 @@ namespace prod_server.Controllers
 
             string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var account = await _accountService.GetById(userId!);
-            if(account == null) return Unauthorized<Product>("failed_create_account");
+            if (account == null) return Unauthorized<Product>("failed_create_account");
 
             // Check if user is admin. When we do the roles.
 
