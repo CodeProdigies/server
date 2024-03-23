@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace prod_server.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class notifications1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -91,6 +91,30 @@ namespace prod_server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    message = table.Column<string>(type: "text", nullable: false),
+                    type = table.Column<int>(type: "integer", nullable: false),
+                    read = table.Column<bool>(type: "boolean", nullable: false),
+                    read_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    createdAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    userId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Accounts_userId",
+                        column: x => x.userId,
+                        principalTable: "Accounts",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CartProduct",
                 columns: table => new
                 {
@@ -123,16 +147,21 @@ namespace prod_server.Migrations
                 name: "IX_CartProduct_QuoteId",
                 table: "CartProduct",
                 column: "QuoteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_userId",
+                table: "Notifications",
+                column: "userId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Accounts");
+                name: "CartProduct");
 
             migrationBuilder.DropTable(
-                name: "CartProduct");
+                name: "Notifications");
 
             migrationBuilder.DropTable(
                 name: "Tokens");
@@ -142,6 +171,9 @@ namespace prod_server.Migrations
 
             migrationBuilder.DropTable(
                 name: "Quotes");
+
+            migrationBuilder.DropTable(
+                name: "Accounts");
         }
     }
 }

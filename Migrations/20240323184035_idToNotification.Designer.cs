@@ -12,8 +12,8 @@ using prod_server.database;
 namespace prod_server.Migrations
 {
     [DbContext(typeof(Context))]
-    [Migration("20240316204447_initial")]
-    partial class initial
+    [Migration("20240323184035_idToNotification")]
+    partial class idToNotification
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -127,6 +127,59 @@ namespace prod_server.Migrations
                     b.HasIndex("QuoteId");
 
                     b.ToTable("CartProduct");
+                });
+
+            modelBuilder.Entity("prod_server.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("createdAt");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("message");
+
+                    b.Property<string>("NotificationRelationshipId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("notification_relationship_id");
+
+                    b.Property<bool>("Read")
+                        .HasColumnType("boolean")
+                        .HasColumnName("read");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("read_date");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("subject");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updatedAt");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("userId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("prod_server.Entities.Product", b =>
@@ -257,6 +310,22 @@ namespace prod_server.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Quote");
+                });
+
+            modelBuilder.Entity("prod_server.Entities.Notification", b =>
+                {
+                    b.HasOne("prod_server.Entities.Account", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("prod_server.Entities.Account", b =>
+                {
+                    b.Navigation("Notifications");
                 });
 
             modelBuilder.Entity("prod_server.Entities.Product", b =>

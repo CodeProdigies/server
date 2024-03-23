@@ -14,10 +14,12 @@ namespace prod_server.Controllers
     public class GeneralController : BaseController
     {
         private readonly IQuoteService _quoteService;
+        private readonly INotificationsService _notificationsService;
 
-        public GeneralController(IQuoteService quoteService)
+        public GeneralController(IQuoteService quoteService, INotificationsService notificationsService)
         {
             _quoteService = quoteService;
+            _notificationsService = notificationsService;
         }
 
         [EnableRateLimiting("quoteslimit")] // This will limit the amount of requests to 1 per 5 seconds.
@@ -81,6 +83,36 @@ namespace prod_server.Controllers
             catch (Exception e)
             {
                 return NotFound<String>(e.Message);
+            }
+
+        }
+
+        [HttpPost("/notifications")]
+        public async Task<IResponse<bool>> CreateNotification(Notification notification)
+        {
+            try
+            {
+                await _notificationsService.Create(notification);
+                return Ok<bool>("notification_created", true);
+            }
+            catch (Exception e)
+            {
+                return NotFound<bool>(e.Message, false);
+            }
+
+        }
+
+        [HttpPut("/notifications/{id}")]
+        public async Task<IResponse<bool>> MarkAsRead(Guid id)
+        {
+            try
+            {
+                await _notificationsService.MarkAsRead(id);
+                return Ok<bool>("notification_updated", true);
+            }
+            catch (Exception e)
+            {
+                return NotFound<bool>(e.Message, false);
             }
 
         }

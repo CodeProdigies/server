@@ -79,6 +79,8 @@ namespace prod_server.Entities
         [Column("mobile")]
         public string? Mobile{ get; set; }
 
+        public List<Notification> Notifications { get; set; } = new List<Notification>();
+
 
         public string CreateJwtToken()
         {

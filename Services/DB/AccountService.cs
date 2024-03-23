@@ -41,6 +41,9 @@ namespace prod_server.Services.DB
 
             var account = new Account(registerModel);
             await _database.Accounts.AddAsync(account);
+
+            await _database.SaveChangesAsync();
+            await _database.Notifications.AddAsync(new Notification(account));
             await _database.SaveChangesAsync();
             return account;
         }
@@ -73,7 +76,7 @@ namespace prod_server.Services.DB
         }
         public Task<Account?> GetById(int userId)
         {
-           return _database.Accounts.FirstOrDefaultAsync(u => u.Id == userId);
+           return _database.Accounts.Include(n => n.Notifications).FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public Task<int> Update(Account account)
@@ -110,7 +113,8 @@ namespace prod_server.Services.DB
                 Address = a.Address,
                 City = a.City,
                 State = a.State,    
-                ZipCode = a.ZipCode
+                ZipCode = a.ZipCode,
+                Notifications = a.Notifications
             };
         }
     }

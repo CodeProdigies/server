@@ -34,7 +34,7 @@ namespace prod_server.Entities
 
         public override string ToString()
         {
-               return $"Product: {Name} - {Description} - {Price} - {Image} - {Category}";
+            return $"Product: {Name} - {Description} - {Price} - {Image} - {Category}";
         }
     }
 

@@ -12,6 +12,7 @@ namespace prod_server.database
         public DbSet<Token> Tokens { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Quote> Quotes { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -30,6 +31,12 @@ namespace prod_server.database
                 .HasOne(cp => cp.Product)
                 .WithMany(p => p.CartProducts)
                 .HasForeignKey(cp => cp.ProductId);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.UserId);
+
         }
     }
 }
