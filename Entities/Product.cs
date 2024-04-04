@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using prod_server.Classes;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -21,6 +22,8 @@ namespace prod_server.Entities
         public string Name { get; set; }
         [Column("description")]
         public string Description { get; set; }
+        [Column("cost")]
+        public decimal? Cost { get; set; } = 0;
         [Column("price")]
         public decimal Price { get; set; }
         [AllowNull]
@@ -30,6 +33,8 @@ namespace prod_server.Entities
         public ProductsCategory? Category { get; set; }
         [NotMapped]
         public virtual List<CartProduct>? CartProducts { get; set; }
+        [NotMapped]
+        public virtual List<OrderItem>? OrderItems{ get; set; }
         public Product() { }
 
         public override string ToString()

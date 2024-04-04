@@ -12,6 +12,7 @@ namespace prod_server.Services.DB
         public Task<List<Quote>> GetQuotes();
         public Task<Quote?> Get(Guid id);
         public Task Delete(Guid id);
+        public Task<List<Quote>> GetWithProducts();
     }
 
     public class QuoteService : IQuoteService
@@ -34,6 +35,12 @@ namespace prod_server.Services.DB
         {
             return _database.Quotes.OrderByDescending(q => q.CreatedAt).ToListAsync();
         }
+
+        public Task<List<Quote>> GetWithProducts()
+        {
+            return GetQuotesWithProducts().ToListAsync();
+        }
+
 
         private IQueryable<Quote> GetQuotesWithProducts()
         {
