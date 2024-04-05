@@ -11,11 +11,13 @@ namespace prod_server.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly IOrderService _orderService;
+        private readonly IQuoteService _quoteService;
 
-        public OrdersController(IAccountService accountService, IOrderService quoteService)
+        public OrdersController(IAccountService accountService, IOrderService orderService, IQuoteService quoteService)
         {
             _accountService = accountService;
-            _orderService = quoteService;
+            _orderService = orderService;
+            _quoteService = quoteService;
         }
 
         [HttpPost("/orders")]
@@ -32,6 +34,27 @@ namespace prod_server.Controllers
                 return new IResponse<string>();
             }
 
+        }
+
+        [HttpPost("/orders/fromquote/{quoteId}")]
+        public async Task<IResponse<Order>> Create(string quoteId)
+        {
+            try
+            {
+
+                var quote = await _quoteService.Get(Guid.Parse(quoteId));
+                
+                if(quote == null) return NotFound<Order>("quote_not_found");
+
+                var order = new Order(quote);
+                await _orderService.Create(order);
+                return Ok<Order>("order_created", order);
+
+            }
+            catch (Exception e)
+            {
+                return new IResponse<Order>();
+            }
         }
 
         [HttpGet("/orders")]

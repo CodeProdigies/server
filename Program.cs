@@ -74,6 +74,8 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+
 
 builder.Services.AddHttpContextAccessor();
 

@@ -15,14 +15,6 @@ namespace prod_server.Controllers
     [ApiController]
     public class GeneralController : BaseController
     {
-        private readonly IAccountService _accountService;
-        private readonly IQuoteService _quoteService;
-        private readonly INotificationsService _notificationsService;
 
-        public GeneralController(IQuoteService quoteService, INotificationsService notificationsService)
-        {
-            _quoteService = quoteService;
-            _notificationsService = notificationsService;
-        }
     }
 }
