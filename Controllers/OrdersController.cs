@@ -21,12 +21,28 @@ namespace prod_server.Controllers
         }
 
         [HttpPost("/orders")]
-        public async Task<IResponse<string>> Create([FromBody] Order quote)
+        public async Task<IResponse<string>> Create([FromBody] Order order)
         {
             try
             {
-                await _orderService.Create(quote);
+                await _orderService.Create(order);
                 return Ok<string>("quote_received");
+
+            }
+            catch (Exception e)
+            {
+                return new IResponse<string>();
+            }
+
+        }
+
+        [HttpPut("/orders")]
+        public async Task<IResponse<string>> Update([FromBody] Order order)
+        {
+            try
+            {
+                await _orderService.Update(order);
+                return Ok<string>("quote_updated");
 
             }
             catch (Exception e)

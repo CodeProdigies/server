@@ -13,6 +13,7 @@ namespace prod_server.Services.DB
         public Task<List<Order>> GetAll();
         public Task<Order?> Get(int id);
         public Task Delete(int id);
+        public Task Update(Order order);
     }
 
     public class OrderService : IOrderService
@@ -52,6 +53,9 @@ namespace prod_server.Services.DB
                         Product = cp.Product,
                         IsSold = cp.IsSold,
                         Total = cp.Total,
+                        OrderId = cp.OrderId,
+                        SellPrice = cp.SellPrice,
+                        BuyPrice = cp.BuyPrice
                     }).ToList()
                 });
         }
@@ -68,6 +72,18 @@ namespace prod_server.Services.DB
             if (quote == null) throw new Exception("Quote not found.");
 
             _database.Remove(quote);
+            await _database.SaveChangesAsync();
+        }
+
+        async public Task Update(Order order)
+        {
+            order.Products.ForEach(p =>
+            {
+                p.Total = p.Quantity * p.SellPrice;
+            });
+
+            order.Total = order.Products.Sum(p => p.Total);
+            _database.Orders.Update(order);
             await _database.SaveChangesAsync();
         }
 
