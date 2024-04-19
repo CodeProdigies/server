@@ -1,21 +1,25 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using prod_server.Classes;
+using prod_server.Classes.Others;
 using prod_server.Entities;
 using prod_server.Services.DB;
+using System.Text;
 using static prod_server.Classes.BaseController;
 
 namespace prod_server.Controllers
 {
+    [Authorize(AuthenticationSchemes = "Accounts")]
+    [ApiController]
+
     public class OrdersController : BaseController
     {
-        private readonly IAccountService _accountService;
         private readonly IOrderService _orderService;
         private readonly IQuoteService _quoteService;
 
-        public OrdersController(IAccountService accountService, IOrderService orderService, IQuoteService quoteService)
+        public OrdersController(IOrderService orderService, IQuoteService quoteService)
         {
-            _accountService = accountService;
             _orderService = orderService;
             _quoteService = quoteService;
         }
@@ -23,7 +27,7 @@ namespace prod_server.Controllers
         [HttpPost("/orders")]
         public async Task<IResponse<string>> Create([FromBody] Order order)
         {
-            try
+          try
             {
                 await _orderService.Create(order);
                 return Ok<string>("quote_received");

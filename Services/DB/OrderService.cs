@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using prod_server.Classes;
 using prod_server.Classes.Others;
 using prod_server.database;
@@ -37,13 +38,15 @@ namespace prod_server.Services.DB
             return _database.Orders.OrderByDescending(q => q.CreatedAt).ToListAsync();
         }
 
-        private IQueryable<Order> GetQuotesWithProducts()
+        private IQueryable<Order> GetOrderWithProducts()
         {
             return _database.Orders
                 .Select(q => new Order
                 {
                     Id = q.Id,
                     CreatedAt = q.CreatedAt,
+                    CustomerId = q.CustomerId,
+                    Customer = q.Customer,
                     // Include other Quote properties here...
                     Products = q.Products.Select(cp => new OrderItem
                     {
@@ -62,7 +65,8 @@ namespace prod_server.Services.DB
 
         public Task<Order?> Get(int id)
         {
-            return GetQuotesWithProducts().FirstOrDefaultAsync(q => q.Id == id);
+            _database.ChangeTracker.LazyLoadingEnabled = false;
+            return GetOrderWithProducts().FirstOrDefaultAsync(q => q.Id == id);
         }
 
 

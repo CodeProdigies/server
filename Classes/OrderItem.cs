@@ -14,7 +14,7 @@ namespace prod_server.Classes
         [Column("product_id")]
         public Guid ProductId { get; set; }
 
-        public Product Product { get; set; }
+        public virtual Product Product { get; set; }
 
         [Column("quantity")]
         public int Quantity { get; set; }

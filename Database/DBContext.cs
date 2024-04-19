@@ -20,6 +20,7 @@ namespace prod_server.database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            //optionsBuilder.UseLazyLoadingProxies();
             // Set up logging to log to the console
             //optionsBuilder.UseLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()));
         }

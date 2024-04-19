@@ -10,15 +10,16 @@ namespace prod_server.Entities
         [Key]
         [Column("id")]
         public int Id { get; set; }
-        public List<OrderItem> Products { get; set; } = new List<OrderItem>();
+        public virtual List<OrderItem> Products { get; set; } = new List<OrderItem>();
         [Column("total")]
         public decimal Total { get; set; }
         [Column("created_at")]
         public DateTime CreatedAt { get; set; }
         public int? CustomerId { get; set; }
         [ForeignKey("CustomerId")]
-        public virtual Customer Customer { get; set; }
+        public virtual Customer? Customer { get; set; }
 
+        
         public Order()
         {
             CreatedAt = DateTime.UtcNow;

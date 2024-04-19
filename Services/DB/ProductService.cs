@@ -34,7 +34,8 @@ namespace prod_server.Services.DB
 
         public Task<Product?> GetById(Guid id)
         {
-            return _database.Products.FirstOrDefaultAsync(x => x.Id == id);
+            _database.ChangeTracker.LazyLoadingEnabled = false;
+            return _database.Products.Include(x => x.Provider).FirstOrDefaultAsync(x => x.Id == id);
         }
         public Task<Product?> GetBySKU(string sku)
         {
