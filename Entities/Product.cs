@@ -35,6 +35,11 @@ namespace prod_server.Entities
         public virtual List<CartProduct>? CartProducts { get; set; }
         [NotMapped]
         public virtual List<OrderItem>? OrderItems{ get; set; }
+        public virtual Provider? Provider { get; set; }
+        public int? ProviderId { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; }
+
         public Product() { }
 
         public override string ToString()

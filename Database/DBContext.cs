@@ -16,6 +16,7 @@ namespace prod_server.database
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<Provider> Providers{ get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -53,6 +54,12 @@ namespace prod_server.database
                 .HasOne(oi => oi.Product)
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(oi => oi.ProductId);
+
+            modelBuilder.Entity<Provider>()
+                .HasMany(p => p.Products)
+                .WithOne(p => p.Provider)
+                .HasForeignKey(p => p.ProviderId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
