@@ -1,13 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
+﻿using Microsoft.AspNetCore.Mvc;
 using prod_server.Classes;
-using prod_server.Entities;
+using prod_server.Services;
 using prod_server.Services.DB;
-using System.Collections.Generic;
-using System.Security.Claims;
-using System.Security.Principal;
-using static prod_server.Classes.BaseController;
 
 namespace prod_server.Controllers
 {
@@ -15,6 +9,24 @@ namespace prod_server.Controllers
     [ApiController]
     public class GeneralController : BaseController
     {
+        private readonly IDocumentsService _documentsService;
+        private readonly IQuoteService _quoteService;
 
+        public GeneralController(IDocumentsService documentsService, IQuoteService quoteService)
+        {
+            _documentsService = documentsService;
+            _quoteService = quoteService;
+        }
+
+        [HttpGet("/p/ping")]
+        public async Task<byte[]> Ping()
+        {
+            var quotes = await _quoteService.GetQuotes();
+            var quote = quotes.FirstOrDefault();
+            var document = await _documentsService.CreateQuote(quote);
+
+
+            return document;
+        }
     }
 }

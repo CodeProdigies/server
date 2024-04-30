@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
+using PdfSharp.Fonts;
+using prod_server.Classes;
 using prod_server.database;
+using prod_server.Services;
 using prod_server.Services.DB;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -13,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 // DB Connection
 // TODO: Move the connection string to the ENV Variables.
 
+GlobalFontSettings.FontResolver = new CustomFontResolver();
 
 var cnString = new NpgsqlConnectionStringBuilder("Host=drona.db.elephantsql.com;Database=eamuzyum;Username=eamuzyum;Password=BqSfXHedbxTBB2pbdSqTmrukzagxKhkq");
 builder.Services.AddDbContext<Context>(options =>
@@ -81,6 +85,7 @@ builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IProviderService, ProviderService>();
+builder.Services.AddScoped<IDocumentsService, DocumentsService>();
 
 
 builder.Services.AddHttpContextAccessor();
