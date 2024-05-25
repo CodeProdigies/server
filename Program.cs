@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 // TODO: Move the connection string to the ENV Variables.
 
 
-var cnString = new NpgsqlConnectionStringBuilder("Host=drona.db.elephantsql.com;Database=eamuzyum;Username=eamuzyum;Password=BqSfXHedbxTBB2pbdSqTmrukzagxKhkq");
+var cnString = new NpgsqlConnectionStringBuilder("Host=ruby.db.elephantsql.com;Database=sjqfdnjb;Username=sjqfdnjb;Password=MqrtzEbZ6mS2IlstUdQdpeo1iQdUdktK");
 builder.Services.AddDbContext<Context>(options =>
 {
     var connectionStringBuilder = new NpgsqlConnectionStringBuilder(cnString.ConnectionString)

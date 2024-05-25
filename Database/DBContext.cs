@@ -61,6 +61,20 @@ namespace prod_server.database
                 .WithOne(p => p.Provider)
                 .HasForeignKey(p => p.ProviderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Customer>()
+                    .HasMany(a => a.Account)
+                    .WithOne(c => c.Customer)
+                    .HasForeignKey(c => c.CustomerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Account>()
+                .HasOne(a => a.Customer)
+                .WithMany(c => c.Account)
+                .HasForeignKey(a => a.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+           
         }
     }
 }

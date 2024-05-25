@@ -64,6 +64,8 @@ namespace prod_server.Controllers
 
             var deviceInfo = this.Request.Headers["User-Agent"].ToString();
 
+            registerModel.Role = Account.AccountRole.Customer;
+
             var createdAccount = await _accountService.Create(registerModel);
             if (createdAccount == null) return UnexpectedError<string>("Failed to create account due to server error.");
 
@@ -183,9 +185,14 @@ namespace prod_server.Controllers
 
             string? userId = this.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Unauthorized<bool>("failed_update_account", false);
-            if(userId != account.Id.ToString()) return Unauthorized<bool>("failed_update_account", false);   // Or check if is admin.
 
-            var dbAccount = await _accountService.GetById(userId);
+            var user = await _accountService.GetById(userId);
+            if (user == null || user.Role < Account.AccountRole.Admin)
+            {
+                if (userId != account.Id.ToString()) return Unauthorized<bool>("failed_update_account", false);   // Or check if is admin.
+            }
+
+            var dbAccount = await _accountService.GetById(account.Id);
             if (dbAccount == null) return BadRequest<bool>("failed_update_password", false);
 
             dbAccount.UpdateFromAnotherAccount(account);
@@ -209,6 +216,21 @@ namespace prod_server.Controllers
             if (deleted == 0) return BadRequest<bool>("failed_delete_account_notfound", false);
 
             return Ok<bool>("account_updated_successfully", true);
+        }
+
+        [HttpPost("/account/search")]
+        public async Task<IResponse<PagedResult<Account>>> GetCustomerByUser(GenericSearchFilter request)
+        {
+            var user = await _accountService.GetById();
+            if (user == null || user.Role < Account.AccountRole.Admin) 
+            {
+                request.Filters.TryAdd("CustomerId", user.CustomerId.ToString());
+            }
+
+            var result = await _accountService.Search(request);
+            if (result == null) return NotFound<PagedResult<Account>>("Unexpected Server Error");
+
+            return Ok<PagedResult<Account>>("customer_retreived_successfully", result);
         }
     }
 }

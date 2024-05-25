@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using prod_server.database;
@@ -11,9 +12,11 @@ using prod_server.database;
 namespace prod_server.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240525123942_fix2")]
+    partial class fix2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,7 +152,8 @@ namespace prod_server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
 
                     b.ToTable("Accounts");
                 });
@@ -189,6 +193,9 @@ namespace prod_server.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
@@ -526,8 +533,8 @@ namespace prod_server.Migrations
             modelBuilder.Entity("prod_server.Entities.Account", b =>
                 {
                     b.HasOne("prod_server.Entities.Customer", "Customer")
-                        .WithMany("Account")
-                        .HasForeignKey("CustomerId")
+                        .WithOne("Account")
+                        .HasForeignKey("prod_server.Entities.Account", "CustomerId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Customer");
@@ -594,7 +601,8 @@ namespace prod_server.Migrations
 
             modelBuilder.Entity("prod_server.Entities.Customer", b =>
                 {
-                    b.Navigation("Account");
+                    b.Navigation("Account")
+                        .IsRequired();
 
                     b.Navigation("Order");
 

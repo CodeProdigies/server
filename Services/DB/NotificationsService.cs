@@ -6,21 +6,16 @@ using prod_server.Migrations;
 namespace prod_server.Services.DB
 {
 
-    public interface INotificationsService
+    public interface INotificationsService : IService<Notification>
     {
         public Task<Notification> Create(Notification notification);
         public Task<bool> MarkAsRead(Guid id);
         public Task<Notification?> Get(Guid id);
         public Task<int> Delete(Guid id);
     }
-    public class NotificationsService : INotificationsService
+    public class NotificationsService : Service<Notification>, INotificationsService
     {
-        private readonly Context _database;
-
-        public NotificationsService(Context database)
-        {
-            _database = database;
-        }
+        public NotificationsService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) { }
 
         public async Task<Notification> Create(Notification notification)
         {

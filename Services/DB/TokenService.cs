@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace prod_server.Services.DB
 {
-    public interface ITokenService
+    public interface ITokenService: IService<Token>
     {
         public Task<Token> Create(Token token);
         public Task<Token> Create(Account account);
@@ -14,14 +14,10 @@ namespace prod_server.Services.DB
         public Task<Token?> GetByIdAndEmail(Guid id, string email);
     }
   
-    public class TokenService : ITokenService
+    public class TokenService : Service<Token>, ITokenService
     {
-        private readonly Context _database;
 
-        public TokenService(Context database)
-        {
-            _database = database;
-        }
+        public TokenService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) { }
 
         public async Task<Token> Create(Token token)
         {

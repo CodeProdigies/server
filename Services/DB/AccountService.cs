@@ -4,30 +4,24 @@ using prod_server.database;
 using prod_server.Entities;
 using System.Linq.Expressions;
 using System.Security.Claims;
+using static prod_server.Entities.Account;
 
 namespace prod_server.Services.DB
 {
-    public interface IAccountService
+    public interface IAccountService : IService<Account>
     {
         Task<Account?> Create(RegisterModel registerModel);
         Task<Account?> GetByUsername(string username);
         Task<Account?> GetByEmail(string email);
         Task<Account?> GetById(string userId);
-        Task<Account?> GetById(int userId);
+        Task<Account?> GetById(int? userId = null);
         Task<int> Update(Account account);
         Task<int> Delete(Guid id);
         Task<List<Account>> GetAll(bool includePassword = false);
     }
-    public class AccountService : IAccountService
+    public class AccountService : Service<Account>, IAccountService
     {
-        private readonly Context _database;
-        private readonly IHttpContextAccessor _contextAccessor;
-
-        public AccountService(Context database, IHttpContextAccessor contextAccessor)
-        {
-            _database = database;
-            _contextAccessor = contextAccessor;
-        }
+        public AccountService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) { }
 
         /// <summary>
         /// Registers an account into the DB.
@@ -40,8 +34,13 @@ namespace prod_server.Services.DB
             registerModel.Password = Utilities.HashPassword(registerModel.Password);
 
             var account = new Account(registerModel);
-            await _database.Accounts.AddAsync(account);
 
+            if(account.Role == AccountRole.Customer)
+            {
+                account.Customer = new Customer();
+            }
+
+            await _database.Accounts.AddAsync(account);
             await _database.SaveChangesAsync();
             await _database.Notifications.AddAsync(new Notification(account));
             await _database.SaveChangesAsync();
@@ -74,9 +73,21 @@ namespace prod_server.Services.DB
         {
            return GetById(int.Parse(userId));
         }
-        public Task<Account?> GetById(int userId)
+
+        public Task<Account?> GetById(int? userId = null)
         {
-           return _database.Accounts.Include(n => n.Notifications).FirstOrDefaultAsync(u => u.Id == userId);
+            if (userId == null)
+            {
+                // If no id is provided, get the id from the token.
+                // It'll return it's own user data.
+                var tempId = _contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (tempId == null) return Task.FromResult<Account?>(null);
+                userId = int.Parse(tempId);
+            }
+            return _database.Accounts
+                    .Include(a => a.Notifications)
+                    .Include(b => b.Customer)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public Task<int> Update(Account account)

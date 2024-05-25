@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace prod_server.Services.DB
 {
-    public interface IQuoteService
+    public interface IQuoteService: IService<Quote>
     {
         public Task<Quote> Create(Quote quote);
         public Task<List<Quote>> GetQuotes();
@@ -15,14 +15,9 @@ namespace prod_server.Services.DB
         public Task<List<Quote>> GetWithProducts();
     }
 
-    public class QuoteService : IQuoteService
+    public class QuoteService : Service<Quote>, IQuoteService
     {
-        private readonly Context _database;
-
-        public QuoteService(Context database)
-        {
-            _database = database;
-        }
+        public QuoteService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) { }
 
         async public Task<Quote> Create(Quote quote)
         {

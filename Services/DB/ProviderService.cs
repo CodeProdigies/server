@@ -4,7 +4,7 @@ using prod_server.Entities;
 
 namespace prod_server.Services.DB
 {
-    public interface IProviderService
+    public interface IProviderService : IService<Provider>
     {
         Task<Provider?> Create(Provider provider);
         Task<Provider?> Get(int id);
@@ -12,17 +12,9 @@ namespace prod_server.Services.DB
         Task<int> Delete(int id);
         Task<List<Provider>> GetAll();
     }
-    public class ProviderService : IProviderService
+    public class ProviderService : Service<Provider>, IProviderService
     {   
-        private readonly Context _database;
-        private readonly IHttpContextAccessor _contextAccessor;
-
-        public ProviderService(Context database, IHttpContextAccessor contextAccessor)
-        {
-            _database = database;
-            _contextAccessor = contextAccessor;
-        }
-
+        public ProviderService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) { }
         public async Task<Provider> Create(Provider provider)
         {
             await _database.Providers.AddAsync(provider);

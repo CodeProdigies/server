@@ -13,7 +13,12 @@ namespace prod_server.Classes
             public int StatusCode { get; set; }
             public string Message { get; set; }
             public T? Payload { get; set; }
+            public MetaData? MetaData { get; set; }
+        }
 
+        public class MetaData()
+        {
+            public PagedResult PagedResult { get; set; }
         }
 
         protected IResponse<T> ApiResponse<T>(int statusCode, string message, T? payload = default)

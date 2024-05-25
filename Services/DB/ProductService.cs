@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace prod_server.Services.DB
 {
-    public interface IProductService
+    public interface IProductService : IService<Order>
     {
         public Task<Product> Create(Product product);
         public Task<Product?> GetById(Guid id);
@@ -16,14 +16,9 @@ namespace prod_server.Services.DB
         public Task<int> Delete(Guid id);
     }
 
-    public class ProductService : IProductService
+    public class ProductService : Service<Order>, IProductService
     {
-        private readonly Context _database;
-
-        public ProductService(Context database)
-        {
-            _database = database;
-        }
+        public ProductService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) { }
 
         public async Task<Product> Create(Product product)
         {

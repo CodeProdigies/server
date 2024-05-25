@@ -1,4 +1,5 @@
 ﻿using System.Net.Mail;
+using static prod_server.Entities.Account;
 
 namespace prod_server.Classes.Others
 {
@@ -10,6 +11,7 @@ namespace prod_server.Classes.Others
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public DateTime? DateOfBirth { get; set; }
+        public AccountRole Role { get; set; } = AccountRole.Customer;
 
         public bool isPasswordValid()
         {

@@ -78,9 +78,22 @@ namespace prod_server.Entities
         [AllowNull]
         [Column("mobile")]
         public string? Mobile{ get; set; }
+        [Column("role")]
+        public AccountRole Role { get; set; } = AccountRole.Customer;
 
+        [AllowNull]
+        [Column("customer_id")]
+        public int? CustomerId { get; set; }
+        public virtual Customer? Customer { get; set; }
         public virtual List<Notification> Notifications { get; set; } = new List<Notification>();
 
+
+        public enum AccountRole
+        {
+            Customer,
+            Employee = 10,
+            Admin = 9999999
+        }
 
         public string CreateJwtToken()
         {
@@ -120,7 +133,12 @@ namespace prod_server.Entities
             this.State = acc.State;
             this.ZipCode = acc.ZipCode;
             this.Country = acc.Country;
-                
+            this.CustomerId = acc.CustomerId;
+            if (this.Role >= AccountRole.Admin)
+            {
+                this.Role = acc.Role;
+            }
+
             this.UpdatedAt = DateTime.UtcNow;
                 
         }

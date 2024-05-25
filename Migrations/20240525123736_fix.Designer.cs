@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using prod_server.database;
@@ -11,9 +12,11 @@ using prod_server.database;
 namespace prod_server.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240525123736_fix")]
+    partial class fix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,7 +152,8 @@ namespace prod_server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
 
                     b.ToTable("Accounts");
                 });
@@ -190,6 +194,9 @@ namespace prod_server.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Address")
                         .HasColumnType("text");
 
@@ -216,6 +223,9 @@ namespace prod_server.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("QuoteId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("State")
                         .HasColumnType("text");
 
@@ -226,6 +236,8 @@ namespace prod_server.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("QuoteId");
 
                     b.ToTable("Customers");
                 });
@@ -304,7 +316,8 @@ namespace prod_server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId")
+                        .IsUnique();
 
                     b.ToTable("Orders");
                 });
@@ -438,9 +451,6 @@ namespace prod_server.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
                         .HasColumnType("text")
                         .HasColumnName("descrption");
@@ -462,8 +472,6 @@ namespace prod_server.Migrations
                         .HasColumnName("type_of_business");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
 
                     b.ToTable("Quotes");
                 });
@@ -526,8 +534,8 @@ namespace prod_server.Migrations
             modelBuilder.Entity("prod_server.Entities.Account", b =>
                 {
                     b.HasOne("prod_server.Entities.Customer", "Customer")
-                        .WithMany("Account")
-                        .HasForeignKey("CustomerId")
+                        .WithOne("Account")
+                        .HasForeignKey("prod_server.Entities.Account", "CustomerId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Customer");
@@ -550,6 +558,17 @@ namespace prod_server.Migrations
                     b.Navigation("Quote");
                 });
 
+            modelBuilder.Entity("prod_server.Entities.Customer", b =>
+                {
+                    b.HasOne("prod_server.Entities.Quote", "Quote")
+                        .WithMany()
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quote");
+                });
+
             modelBuilder.Entity("prod_server.Entities.Notification", b =>
                 {
                     b.HasOne("prod_server.Entities.Account", "User")
@@ -564,8 +583,8 @@ namespace prod_server.Migrations
             modelBuilder.Entity("prod_server.Entities.Order", b =>
                 {
                     b.HasOne("prod_server.Entities.Customer", "Customer")
-                        .WithMany("Order")
-                        .HasForeignKey("CustomerId");
+                        .WithOne("Order")
+                        .HasForeignKey("prod_server.Entities.Order", "CustomerId");
 
                     b.Navigation("Customer");
                 });
@@ -580,13 +599,6 @@ namespace prod_server.Migrations
                     b.Navigation("Provider");
                 });
 
-            modelBuilder.Entity("prod_server.Entities.Quote", b =>
-                {
-                    b.HasOne("prod_server.Entities.Customer", null)
-                        .WithMany("Quote")
-                        .HasForeignKey("CustomerId");
-                });
-
             modelBuilder.Entity("prod_server.Entities.Account", b =>
                 {
                     b.Navigation("Notifications");
@@ -594,11 +606,11 @@ namespace prod_server.Migrations
 
             modelBuilder.Entity("prod_server.Entities.Customer", b =>
                 {
-                    b.Navigation("Account");
+                    b.Navigation("Account")
+                        .IsRequired();
 
-                    b.Navigation("Order");
-
-                    b.Navigation("Quote");
+                    b.Navigation("Order")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("prod_server.Entities.Order", b =>

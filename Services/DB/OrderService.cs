@@ -8,23 +8,19 @@ using System.Security.Claims;
 
 namespace prod_server.Services.DB
 {
-    public interface IOrderService
+    public interface IOrderService : IService<Order>
     {
         public Task<Order> Create(Order quote);
         public Task<List<Order>> GetAll();
         public Task<Order?> Get(int id);
         public Task Delete(int id);
         public Task Update(Order order);
+        public Task <List<Order>> GetByCustomer(int id);
     }
 
-    public class OrderService : IOrderService
+    public class OrderService : Service<Order>, IOrderService
     {
-        private readonly Context _database;
-
-        public OrderService(Context database)
-        {
-            _database = database;
-        }
+        public OrderService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) {}
 
         async public Task<Order> Create(Order order)
         {
@@ -89,6 +85,11 @@ namespace prod_server.Services.DB
             order.Total = order.Products.Sum(p => p.Total);
             _database.Orders.Update(order);
             await _database.SaveChangesAsync();
+        }
+
+        async public Task<List<Order>> GetByCustomer(int id)
+        {
+            return await _database.Orders.Where(o => o.CustomerId == id).ToListAsync();
         }
 
     }
