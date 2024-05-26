@@ -38,6 +38,8 @@ namespace prod_server.Services.DB
             if(account.Role == AccountRole.Customer)
             {
                 account.Customer = new Customer();
+                account.Customer.Name = "";
+
             }
 
             await _database.Accounts.AddAsync(account);
