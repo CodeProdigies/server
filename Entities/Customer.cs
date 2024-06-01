@@ -18,9 +18,9 @@ namespace prod_server.Entities
         public string? Identifier { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set;  }
-        public virtual List<Order> Order { get; set; }
-        public virtual List<Quote> Quote { get; set; }
-        public virtual List<Account> Account { get; set; }
+        public virtual List<Order> Orders { get; set; } = new List<Order>();
+        public virtual List<Quote> Quotes { get; set; } = new List<Quote>();
+        public virtual List<Account> Accounts { get; set; } = new List<Account>();
 
         public Customer()
         {

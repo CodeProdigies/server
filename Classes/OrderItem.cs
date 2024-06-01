@@ -8,7 +8,7 @@ namespace prod_server.Classes
     {
         [Key]
         [Column("id")]
-        public int Id { get; set; }
+        public int? Id { get; set; } = null;
 
         [ForeignKey("Product")]
         [Column("product_id")]

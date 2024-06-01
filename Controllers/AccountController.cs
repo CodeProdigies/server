@@ -232,5 +232,16 @@ namespace prod_server.Controllers
 
             return Ok<PagedResult<Account>>("customer_retreived_successfully", result);
         }
+
+        [HttpGet("/account/analytics")]
+        public async Task<IResponse<CustomerSummary>> GetAnalytics()
+        {
+            var user = await _accountService.GetById();
+            if (user == null ) return Unauthorized<CustomerSummary>("Unauthorized");
+
+            var result = await _accountService.GetCustomerDashboardSummary();
+
+            return Ok<CustomerSummary>("analytics_retreived_successfully", result);
+        }
     }
 }

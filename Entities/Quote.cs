@@ -22,7 +22,7 @@ namespace prod_server.Entities
         [Column("type_of_business")]
         public TypeOfBusiness TypeOfBusiness { get; set; } = TypeOfBusiness.Other;
         [Column("products")]
-        public virtual List<CartProduct> Products { get; set; }
+        public virtual List<CartProduct> Products { get; set; } = new List<CartProduct>();
         [Column("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }

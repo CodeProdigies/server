@@ -1,4 +1,5 @@
 ﻿using prod_server.Classes;
+using prod_server.Classes.Others;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,7 +10,7 @@ namespace prod_server.Entities
     {
         [Key]
         [Column("id")]
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public virtual List<OrderItem> Products { get; set; } = new List<OrderItem>();
         [Column("total")]
         public decimal Total { get; set; }
@@ -18,6 +19,7 @@ namespace prod_server.Entities
         public int? CustomerId { get; set; }
         [ForeignKey("CustomerId")]
         public virtual Customer? Customer { get; set; }
+        public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
         
         public Order()
@@ -44,6 +46,33 @@ namespace prod_server.Entities
             Products = listOfProductsFromQuote;
             Products.ForEach(product => Total += product.Total);
             CreatedAt = DateTime.UtcNow;
+        }
+
+        public Order (CreateQuoteRequest createQuoteRequest){
+            var listOfProductsFromQuote = createQuoteRequest.Products
+                .Where(x => x.Product != null)    
+                .Select(cartItem => new OrderItem(cartItem.Product!)
+                {
+                    Quantity = cartItem.Quantity,
+                    SellPrice = cartItem.Product?.Price ?? 0,
+                    BuyPrice = 0,
+                    Total = (cartItem.Product?.Price ?? 0) * cartItem.Quantity
+                }).ToList();
+
+            Products = listOfProductsFromQuote;
+            Products.ForEach(product => Total += product.Total);
+            Total = Products.Sum(x => x.Total);
+            CreatedAt = DateTime.UtcNow;
+        
+        }
+
+        public enum OrderStatus
+        {
+            Pending = 10,
+            Processing = 20,
+            Shipped = 30,
+            Delivered = 40,
+            Cancelled = 50
         }
 
     }

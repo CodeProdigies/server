@@ -63,14 +63,14 @@ namespace prod_server.database
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Customer>()
-                    .HasMany(a => a.Account)
+                    .HasMany(a => a.Accounts)
                     .WithOne(c => c.Customer)
                     .HasForeignKey(c => c.CustomerId)
                     .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Account>()
                 .HasOne(a => a.Customer)
-                .WithMany(c => c.Account)
+                .WithMany(c => c.Accounts)
                 .HasForeignKey(a => a.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
 

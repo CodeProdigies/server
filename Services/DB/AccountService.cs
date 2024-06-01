@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using prod_server.Classes;
 using prod_server.Classes.Others;
 using prod_server.database;
 using prod_server.Entities;
@@ -18,6 +19,7 @@ namespace prod_server.Services.DB
         Task<int> Update(Account account);
         Task<int> Delete(Guid id);
         Task<List<Account>> GetAll(bool includePassword = false);
+        Task<CustomerSummary> GetCustomerDashboardSummary();
     }
     public class AccountService : Service<Account>, IAccountService
     {
@@ -98,6 +100,36 @@ namespace prod_server.Services.DB
             _database.Accounts.Update(account);
 
             return _database.SaveChangesAsync();
+        }
+
+        public async Task<CustomerSummary> GetCustomerDashboardSummary()
+        {
+            var account = await GetById();
+            if (account == null) return new CustomerSummary();
+
+            IQueryable<Customer> query;
+
+            if(account.Role == AccountRole.Admin) query = _database.Customers;
+            else {
+                query = _database.Customers
+                    .Where(c => c.Accounts.Any(x => x.Id == account.Id));
+            }
+
+            // var usersWithOrders = await query
+            //     .Include(c => c.Orders)
+            //     .ToListAsync();
+
+            var customerSummary = await query
+                .Select(c => new CustomerSummary
+                {
+                    OrdersCompleted = c.Orders.Count(x => x.Status == Order.OrderStatus.Delivered && x.CreatedAt > DateTime.UtcNow.AddDays(-90)),
+                    OrdersInProgress = c.Orders.Count(x => x.Status == Order.OrderStatus.Processing && x.CreatedAt > DateTime.UtcNow.AddDays(-30)),
+                    PructRequests = c.Quotes.Count,
+                })
+                .FirstOrDefaultAsync();
+
+            return customerSummary ?? new CustomerSummary();
+
         }
 
         public async Task<int> Delete(Guid id)
