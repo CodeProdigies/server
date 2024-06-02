@@ -6,10 +6,10 @@ using System.Security.Claims;
 
 namespace prod_server.Services.DB
 {
-    public interface IQuoteService : IService<Quote>
+    public interface IQuoteService: IService<Quote>
     {
         public Task<Quote> Create(Quote quote);
-        public Task<List<Quote>> GetQuotes(int? customerId = null);
+        public Task<List<Quote>> GetQuotes();
         public Task<Quote?> Get(Guid id);
         public Task Delete(Guid id);
         public Task<List<Quote>> GetWithProducts();
@@ -26,17 +26,9 @@ namespace prod_server.Services.DB
             return quote;
         }
 
-        public async Task<List<Quote>> GetQuotes(int? customerId = null)
+        public Task<List<Quote>> GetQuotes()
         {
-            if (customerId != null)
-            {
-                var customer = await _database.Customers.Where(c => c.Id == customerId).Include(x => x.Quote).FirstOrDefaultAsync();
-                if (customer == null) return new List<Quote>();
-
-                return customer?.Quote ?? new List<Quote>();
-
-            }
-            return await _database.Quotes.OrderByDescending(q => q.CreatedAt).ToListAsync();
+            return _database.Quotes.OrderByDescending(q => q.CreatedAt).ToListAsync();
         }
 
         public Task<List<Quote>> GetWithProducts()
