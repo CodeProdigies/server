@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
 using static prod_server.Classes.BaseController;
+using static prod_server.Entities.Account;
 
 namespace prod_server.Controllers
 {
@@ -45,9 +46,16 @@ namespace prod_server.Controllers
         [HttpGet("/quote")]
         public async Task<IResponse<List<Quote>>> Get()
         {
+            //get the user's permissions and check if they're admin. If admin, return all. If not, get the companyID filter with that.
             try
             {
-                var quotes = await _quoteService.GetQuotes();
+                int? userId = null;
+                var user = await _accountService.GetById();
+
+                if (user == null) return new IResponse<List<Quote>>();
+                if (user.Role != AccountRole.Admin) userId = user.Customer.Id;
+
+                var quotes = await _quoteService.GetQuotes(userId);
                 return Ok<List<Quote>>("quote_received", quotes);
 
             }
