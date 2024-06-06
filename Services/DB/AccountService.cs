@@ -120,15 +120,16 @@ namespace prod_server.Services.DB
             //     .ToListAsync();
 
             var customerSummary = await query
-                .Select(c => new CustomerSummary
+                .GroupBy(c => 1) // Group all customers together
+                .Select(g => new CustomerSummary
                 {
-                    OrdersCompleted = c.Orders.Count(x => x.Status == Order.OrderStatus.Delivered && x.CreatedAt > DateTime.UtcNow.AddDays(-90)),
-                    OrdersInProgress = c.Orders.Count(x => x.Status == Order.OrderStatus.Processing && x.CreatedAt > DateTime.UtcNow.AddDays(-30)),
-                    PructRequests = c.Quotes.Count,
+                    OrdersCompleted = g.SelectMany(c => c.Orders).Count(x => x.Status == Order.OrderStatus.Delivered),
+                    OrdersInProgress = g.SelectMany(c => c.Orders).Count(x => x.Status == Order.OrderStatus.Processing),
+                    PructRequests = g.SelectMany(c => c.Quotes).Count(),
                 })
                 .FirstOrDefaultAsync();
 
-            return customerSummary ?? new CustomerSummary();
+            return customerSummary ?? new CustomerSummary() ;
 
         }
 
