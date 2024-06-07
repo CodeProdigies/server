@@ -8,6 +8,7 @@
         public string? SortBy { get; set; }
         public string? SortOrder { get; set; } = "asc";
         public Dictionary<string, string> Filters { get; set; } = new Dictionary<string, string>();
+        public List<string> Includes { get; set; } = new List<string>();
         public void Add(string key, string value)
         {
             Filters.TryAdd(key, value);

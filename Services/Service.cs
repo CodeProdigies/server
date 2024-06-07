@@ -30,6 +30,11 @@ namespace prod_server.Services
             {
                 IQueryable<TEntity> query = _database.Set<TEntity>();
 
+                foreach (var include in request.Includes)
+                {
+                    query = query.Include(include);
+                }
+
                 foreach (var (propertyName, searchTerm) in request.Filters)
                 {
                     try
@@ -134,5 +139,7 @@ namespace prod_server.Services
                 }
             }
         }
+
+
     }
 }

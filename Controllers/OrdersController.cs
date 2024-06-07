@@ -17,11 +17,13 @@ namespace prod_server.Controllers
     {
         private readonly IOrderService _orderService;
         private readonly IQuoteService _quoteService;
+        private readonly IAccountService _accountService;
 
-        public OrdersController(IOrderService orderService, IQuoteService quoteService)
+        public OrdersController(IOrderService orderService, IQuoteService quoteService, IAccountService accountService)
         {
             _orderService = orderService;
             _quoteService = quoteService;
+            _accountService = accountService;
         }
 
         [HttpPost("/orders")]
@@ -122,6 +124,19 @@ namespace prod_server.Controllers
             {
                 return NotFound<bool>(e.Message, false);
             }
+
+        }
+
+        [HttpPost("/orders/search")]
+        public async Task<IResponse<PagedResult<Order>>> Get(GenericSearchFilter request)
+        {
+            var user = await _accountService.GetById();
+            if (user == null || user.Role < Account.AccountRole.Admin) return Unauthorized<PagedResult<Order>>("unauthorized_access", null);
+
+            var result = await _orderService.Search(request);
+            if (result == null) return NotFound<PagedResult<Order>>("Unexpected Server Error");
+
+            return Ok<PagedResult<Order>>("quote_retreived_successfully", result);
 
         }
     }

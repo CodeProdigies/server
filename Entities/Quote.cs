@@ -25,6 +25,9 @@ namespace prod_server.Entities
         public virtual List<CartProduct> Products { get; set; } = new List<CartProduct>();
         [Column("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public virtual Customer? Customer { get; set; }
+        [ForeignKey("CustomerId")]
+        public int? CustomerId { get; set; }
     }
 }
 

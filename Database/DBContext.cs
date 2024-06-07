@@ -74,7 +74,12 @@ namespace prod_server.database
                 .HasForeignKey(a => a.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-           
+            modelBuilder.Entity<Quote>()
+                .HasOne(q => q.Customer)
+                .WithMany(c => c.Quotes)
+                .HasForeignKey(q => q.CustomerId)
+                .IsRequired(false) // Indicate that the relationship is optional
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
