@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Org.BouncyCastle.Asn1.Ocsp;
+using Org.BouncyCastle.Asn1.X509;
 using prod_server.Classes;
 using prod_server.Classes.Others;
 using prod_server.Entities;
@@ -34,6 +35,17 @@ namespace prod_server.Controllers
             try
             {
                 var user = await _accountService.GetById();
+
+                if(user != null && user.Customer != null)
+                {
+                    quote.Name = user.Customer?.Name ?? "";
+                    quote.EmailAddress = user.Email;
+                    quote.ContactName = user.FirstName + " " + user.LastName;
+                    quote.PhoneNumber = user.Phone;
+                    quote.Customer = user.Customer;
+                }
+
+
                 await _quoteService.Create(quote);
                 return Ok<string>("quote_received");
 
