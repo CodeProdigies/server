@@ -105,7 +105,7 @@ namespace prod_server.Controllers
 
         }
 
-        [HttpPost("/orders/search")]
+        [HttpPost("/quote/search")]
         public async Task<IResponse<PagedResult<Quote>>> Get(GenericSearchFilter request)
         {
             var user = await _accountService.GetById();
