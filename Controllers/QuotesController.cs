@@ -105,17 +105,27 @@ namespace prod_server.Controllers
 
         }
 
-        [HttpPost("/quote/search")]
+        [HttpPost("/orders/search")]
         public async Task<IResponse<PagedResult<Quote>>> Get(GenericSearchFilter request)
         {
             var user = await _accountService.GetById();
-            if (user == null || user.Role < Account.AccountRole.Admin) return Unauthorized<PagedResult<Quote>>("unauthorized_access", null);
+            if (user == null)
+                return Unauthorized<PagedResult<Quote>>("Unauthorized");
+
+            if (user.Role < Account.AccountRole.Admin && user.CustomerId.HasValue)
+            {
+                request.Filters.Add("CustomerId", user.CustomerId.Value.ToString());
+            }
+            else if (user.Role < Account.AccountRole.Admin)
+            {
+                return Unauthorized<PagedResult<Quote>>("Unauthorized");
+            }
 
             var result = await _quoteService.Search(request);
-            if (result == null) return NotFound<PagedResult<Quote>>("Unexpected Server Error");
+            if (result == null)
+                return NotFound<PagedResult<Quote>>("Unexpected Server Error");
 
-            return Ok<PagedResult<Quote>>("quote_retreived_successfully", result);    
-
+            return Ok<PagedResult<Quote>>("quote_retrieved_successfully", result);
         }
     }
 }

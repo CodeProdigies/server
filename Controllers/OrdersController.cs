@@ -131,7 +131,17 @@ namespace prod_server.Controllers
         public async Task<IResponse<PagedResult<Order>>> Get(GenericSearchFilter request)
         {
             var user = await _accountService.GetById();
-            if (user == null || user.Role < Account.AccountRole.Admin) return Unauthorized<PagedResult<Order>>("unauthorized_access", null);
+            if (user == null ) 
+                return Unauthorized<PagedResult<Order>>("unauthorized_access");
+
+            if (user.Role < Account.AccountRole.Admin && user.CustomerId.HasValue)
+            {
+                request.Filters.Add("CustomerId", user.CustomerId.Value.ToString());
+            }
+            else if (user.Role < Account.AccountRole.Admin)
+            {
+                return Unauthorized<PagedResult<Order>>("Unauthorized");
+            }
 
             var result = await _orderService.Search(request);
             if (result == null) return NotFound<PagedResult<Order>>("Unexpected Server Error");
