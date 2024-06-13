@@ -14,6 +14,7 @@ namespace prod_server.Services.DB
         public Task<List<Product>> GetAll();
         public Task<int> Update(Product product);
         public Task<int> Delete(Guid id);
+        public Task<List<Product>> GetLastest(int quantity);
     }
 
     public class ProductService : Service<Order>, IProductService
@@ -58,6 +59,12 @@ namespace prod_server.Services.DB
                 return await _database.SaveChangesAsync();
             }
             return 0; // Return 0 if the product with the specified id is not found
+        }
+
+        public Task<List<Product>> GetLastest(int quantity)
+        {
+            if (quantity > 25) quantity = 25;
+            return _database.Products.OrderByDescending(x => x.CreatedAt).Take(quantity).ToListAsync();
         }
     }
 }

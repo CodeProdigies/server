@@ -115,5 +115,21 @@ namespace prod_server.Controllers
 
             return Ok<List<Product>>("products_retrieved_successfully", products);
         }
+
+        [AllowAnonymous]
+        [HttpGet("/products/lastest")]
+        [ProducesResponseType(typeof(IResponse<Product>), 500)]
+        [ProducesResponseType(typeof(IResponse<Product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<IResponse<List<Product>>> GetLastest(int quantity = 3)
+        {
+
+            // Check if user is admin. When we do the roles.
+
+            var products = await _productService.GetLastest(quantity);
+            if (products == null) return UnexpectedError<List<Product>>("failed_retrieve_product");
+
+            return Ok<List<Product>>("products_retrieved_successfully", products);
+        }
     }
 }
