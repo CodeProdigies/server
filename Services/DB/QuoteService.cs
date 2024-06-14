@@ -28,7 +28,7 @@ namespace prod_server.Services.DB
 
         public Task<List<Quote>> GetQuotes()
         {
-            return _database.Quotes.OrderByDescending(q => q.CreatedAt).ToListAsync();
+            return _database.Quotes.OrderByDescending(q => q.CreatedAt).Include(x => x.Name).ToListAsync();
         }
 
         public Task<List<Quote>> GetWithProducts()
@@ -40,26 +40,9 @@ namespace prod_server.Services.DB
         private IQueryable<Quote> GetQuotesWithProducts()
         {
             return _database.Quotes
-                .Select(q => new Quote
-                {
-                    Id = q.Id,
-                    Name = q.Name,
-                    Description = q.Description,
-                    EmailAddress = q.EmailAddress,
-                    ContactName = q.ContactName,
-                    PhoneNumber = q.PhoneNumber,
-                    TypeOfBusiness = q.TypeOfBusiness,
-                    CreatedAt = q.CreatedAt,
-                    // Include other Quote properties here...
-                    Products = q.Products.Select(cp => new CartProduct
-                    {
-                        Id = cp.Id,
-                        ProductId = cp.ProductId,
-                        Quantity = cp.Quantity,
-                        Product = cp.Product,
-                        QuoteId = cp.QuoteId
-                    }).ToList()
-                });
+                .Include(q => q.Name)
+                .Include(q => q.Products)
+                .ThenInclude(cp => cp.Product);
         }
 
         public Task<Quote?> Get(Guid id)
