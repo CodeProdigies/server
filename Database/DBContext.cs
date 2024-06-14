@@ -80,6 +80,8 @@ namespace prod_server.database
                 .HasForeignKey(q => q.CustomerId)
                 .IsRequired(false) // Indicate that the relationship is optional
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Quote>().OwnsOne(p => p.Name);
         }
     }
 }

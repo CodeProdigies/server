@@ -28,6 +28,7 @@ namespace prod_server.Controllers
             _quoteService = quoteService;
         }
 
+        [AllowAnonymous]
         [EnableRateLimiting("quoteslimit")] // This will limit the amount of requests to 1 per 5 seconds.
         [HttpPost("/quote")]
         public async Task<IResponse<string>> Create([FromBody] Quote quote)
@@ -38,7 +39,11 @@ namespace prod_server.Controllers
 
                 if(user != null && user.Customer != null)
                 {
-                    quote.Name = user.Customer?.Name ?? "";
+                    quote.Name = new Name()
+                    {
+                        First = user.FirstName,
+                        Last = user.LastName,
+                    };
                     quote.EmailAddress = user.Email;
                     quote.ContactName = user.FirstName + " " + user.LastName;
                     quote.PhoneNumber = user.Phone;
