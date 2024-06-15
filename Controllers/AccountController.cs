@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using prod_server.Classes;
 using prod_server.Classes.Others;
 using prod_server.Entities;
+using prod_server.Services;
 using prod_server.Services.DB;
 using System.Security.Claims;
 
@@ -16,11 +17,13 @@ namespace prod_server.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly ITokenService _tokenService;
+        private readonly IUtilitiesService _utilitiesService;
 
-        public AccountController(IAccountService accountService, ITokenService tokenService)
+        public AccountController(IAccountService accountService, ITokenService tokenService, IUtilitiesService utilitiesService)
         {
             _accountService = accountService;
             _tokenService = tokenService;
+            _utilitiesService = utilitiesService;
         }
 
         [AllowAnonymous]
@@ -126,9 +129,10 @@ namespace prod_server.Controllers
             // OR knowing if user exists or not because of the time it takes to send an email.
             if (user != null)
             {
-                Console.WriteLine("AAA");
                 var token = await _tokenService.Create(user);
                 // Start the asynchronous operation on a separate thread without blocking the current thread
+                _utilitiesService.SendEmail(user.Email, "Password Reset", $"Your OTP is {token.Code}");
+
             }
 
             // Return a quick response to the client
