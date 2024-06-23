@@ -29,6 +29,7 @@ namespace prod_server.Controllers
         [HttpPost("/orders")]
         public async Task<IResponse<string>> Create([FromBody] CreateQuoteRequest order)
         {
+            try
             {
                 await _orderService.Create(new Order(order));
                 return Ok<string>("quote_received");
