@@ -13,14 +13,15 @@ namespace prod_server.Services.DB
         public Task<Order> Create(Order quote);
         public Task<List<Order>> GetAll();
         public Task<Order?> Get(int id);
+        public Task<List<Order>> GetFromCustomerId(int customerId);
         public Task Delete(int id);
         public Task Update(Order order);
-        public Task <List<Order>> GetByCustomer(int id);
+        public Task<List<Order>> GetByCustomer(int id);
     }
 
     public class OrderService : Service<Order>, IOrderService
     {
-        public OrderService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) {}
+        public OrderService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) { }
 
         async public Task<Order> Create(Order order)
         {
@@ -63,6 +64,12 @@ namespace prod_server.Services.DB
         {
             _database.ChangeTracker.LazyLoadingEnabled = false;
             return GetOrderWithProducts().FirstOrDefaultAsync(q => q.Id == id);
+        }
+
+        public Task<List<Order>> GetFromCustomerId(int customerId)
+        {
+            _database.ChangeTracker.LazyLoadingEnabled = false;
+            return GetOrderWithProducts().Where(q => q.CustomerId == customerId).ToListAsync();
         }
 
 

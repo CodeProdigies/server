@@ -29,7 +29,6 @@ namespace prod_server.Controllers
         [HttpPost("/orders")]
         public async Task<IResponse<string>> Create([FromBody] CreateQuoteRequest order)
         {
-          try
             {
                 await _orderService.Create(new Order(order));
                 return Ok<string>("quote_received");
@@ -65,8 +64,8 @@ namespace prod_server.Controllers
             {
 
                 var quote = await _quoteService.Get(Guid.Parse(quoteId));
-                
-                if(quote == null) return NotFound<Order>("quote_not_found");
+
+                if (quote == null) return NotFound<Order>("quote_not_found");
 
                 var order = new Order(quote);
                 await _orderService.Create(order);
@@ -111,6 +110,23 @@ namespace prod_server.Controllers
 
         }
 
+        [HttpGet("/orders/fromcustomer/{customerId}")]
+        public async Task<IResponse<List<Order>>> GetFromCustomer(int customerId)
+        {
+            try
+            {
+                var Orders = await _orderService.GetFromCustomerId(customerId);
+                return Ok<List<Order>>("quote_received", Orders);
+
+            }
+            catch (Exception e)
+            {
+                return new IResponse<List<Order>>();
+            }
+
+        }
+
+
         [HttpDelete("/orders/{id}")]
         public async Task<IResponse<bool>> Delete(int id)
         {
@@ -131,7 +147,7 @@ namespace prod_server.Controllers
         public async Task<IResponse<PagedResult<Order>>> Get(GenericSearchFilter request)
         {
             var user = await _accountService.GetById();
-            if (user == null ) 
+            if (user == null)
                 return Unauthorized<PagedResult<Order>>("unauthorized_access");
 
             if (user.Role < Account.AccountRole.Admin && user.CustomerId.HasValue)
