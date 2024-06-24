@@ -19,12 +19,21 @@ namespace prod_server.Services.DB
 
     public class ProductService : Service<Order>, IProductService
     {
-        public ProductService(Context database, IHttpContextAccessor contextAccessor) : base(database, contextAccessor) { }
-
+        private readonly IUtilitiesService _utilitiesService;
+        public ProductService(Context database, IHttpContextAccessor contextAccessor, IUtilitiesService utilitiesService)
+            : base(database, contextAccessor)
+        {
+            _utilitiesService = utilitiesService;
+        }
         public async Task<Product> Create(Product product)
         {
             await _database.Products.AddAsync(product);
-            await _database.SaveChangesAsync();
+            var response = await _database.SaveChangesAsync();
+
+            if (response == 1 && product.Image != null)
+            {
+                await _utilitiesService.uploadImage(product.Image, $"{product.SKU}.png");
+            }
             return product;
         }
 
