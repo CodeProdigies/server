@@ -39,13 +39,9 @@ namespace prod_server.Controllers
 
                 if(user != null && user.Customer != null)
                 {
-                    quote.Name = new Name()
-                    {
-                        First = user.FirstName,
-                        Last = user.LastName,
-                    };
+                    quote.Name = user.Name;
                     quote.EmailAddress = user.Email;
-                    quote.ContactName = user.FirstName + " " + user.LastName;
+                    quote.ContactName = user.Name.GetFormattedName();
                     quote.PhoneNumber = user.Phone;
                     quote.Customer = user.Customer;
                 }

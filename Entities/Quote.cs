@@ -1,4 +1,5 @@
-﻿using prod_server.Classes.Others;
+﻿using prod_server.Classes.Common;
+using prod_server.Classes.Others;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,7 +12,7 @@ namespace prod_server.Entities
         [Column("id")]
         public Guid? Id { get; set; } = Guid.NewGuid();
         [Column("name")]
-        public Name? Name { get; set; }
+        public Name Name { get; set; } = new Name();
         [Column("company_name")]
         public string? CompanyName { get; set; }
         [Column("descrption")]

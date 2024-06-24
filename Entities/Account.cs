@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using prod_server.Classes.Common;
 using prod_server.Classes.Others;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -15,13 +16,13 @@ namespace prod_server.Entities
     public class Account
     {
         public Account() { }
-        public Account (RegisterModel registerModel)
+        public Account(RegisterModel registerModel)
         {
             Username = registerModel.Username;
             Password = registerModel.Password;
             Email = registerModel.Email;
-            FirstName = registerModel.FirstName;
-            LastName = registerModel.LastName;
+            Name = registerModel.Name;
+            DateOfBirth = registerModel.DateOfBirth;
         }
 
         [Key]
@@ -42,51 +43,43 @@ namespace prod_server.Entities
         [MaxLength(50)]
         public string Email { get; set; }
 
-        [AllowNull]
-        [Column("first_name")]
-        [MaxLength(50)]
-        public string? FirstName { get; set; }
 
-        [AllowNull]
-        [Column("last_name")]
-        [MaxLength(50)]
-        public string? LastName { get; set; }
+        [Required]
+        [Column("name")]
+        public Name Name { get; set; } = new Name();
 
         [Column("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [Column("updatedAt")]
         public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+
         [AllowNull]
-        [Column("address")]
-        public string? Address { get; set; }
-        [AllowNull]
-        [Column("city")]
-        public string? City { get; set; }
-        [AllowNull]
-        [Column("state")]
-        public string? State { get; set; }
-        [AllowNull]
-        [Column("zipCode")]
-        public string? ZipCode { get; set; }
-        [AllowNull]
-        [Column("country")]
-        public string? Country { get; set; }
+        [Column("dob")]
+        public DateTime? DateOfBirth { get; set; }
+
+        [Required]
+        [Column("shipping_details")]
+        public Address ShippingDetails { get; set; } = new Address();
+
         [AllowNull]
         [Column("phone")]
         public string? Phone { get; set; }
+
         [AllowNull]
         [Column("mobile")]
-        public string? Mobile{ get; set; }
+        public string? Mobile { get; set; }
+
         [Column("role")]
         public AccountRole Role { get; set; } = AccountRole.Customer;
 
         [AllowNull]
         [Column("customer_id")]
         public int? CustomerId { get; set; }
-        public virtual Customer? Customer { get; set; }
-        public virtual List<Notification> Notifications { get; set; } = new List<Notification>();
 
+        public virtual Customer? Customer { get; set; }
+
+        public virtual List<Notification> Notifications { get; set; } = new List<Notification>();
 
         public enum AccountRole
         {
@@ -115,7 +108,7 @@ namespace prod_server.Entities
             return jetTokenString;
         }
 
-        public bool ValidatePassword (string password)
+        public bool ValidatePassword(string password)
         {
             return BCryptNet.Verify(password, Password);
         }
@@ -124,15 +117,9 @@ namespace prod_server.Entities
         {
             this.Username = acc.Username;
             this.Email = acc.Email;
-            this.FirstName = acc.FirstName;
-            this.LastName = acc.LastName;
             this.Phone = acc.Phone;
             this.Mobile = acc.Mobile;
-            this.Address = acc.Address;
-            this.City = acc.City;
-            this.State = acc.State;
-            this.ZipCode = acc.ZipCode;
-            this.Country = acc.Country;
+            this.ShippingDetails = acc.ShippingDetails;
             this.CustomerId = acc.CustomerId;
             if (this.Role >= AccountRole.Admin)
             {
@@ -140,7 +127,7 @@ namespace prod_server.Entities
             }
 
             this.UpdatedAt = DateTime.UtcNow;
-                
+
         }
     }
 }

@@ -37,7 +37,7 @@ namespace prod_server.Services.DB
 
             var account = new Account(registerModel);
 
-            if(account.Role == AccountRole.Customer)
+            if (account.Role == AccountRole.Customer)
             {
                 account.Customer = new Customer();
                 account.Customer.Name = "";
@@ -75,7 +75,7 @@ namespace prod_server.Services.DB
 
         public Task<Account?> GetById(string userId)
         {
-           return GetById(int.Parse(userId));
+            return GetById(int.Parse(userId));
         }
 
         public Task<Account?> GetById(int? userId = null)
@@ -109,8 +109,9 @@ namespace prod_server.Services.DB
 
             IQueryable<Customer> query;
 
-            if(account.Role == AccountRole.Admin) query = _database.Customers;
-            else {
+            if (account.Role == AccountRole.Admin) query = _database.Customers;
+            else
+            {
                 query = _database.Customers
                     .Where(c => c.Accounts.Any(x => x.Id == account.Id));
             }
@@ -129,7 +130,7 @@ namespace prod_server.Services.DB
                 })
                 .FirstOrDefaultAsync();
 
-            return customerSummary ?? new CustomerSummary() ;
+            return customerSummary ?? new CustomerSummary();
 
         }
 
@@ -152,14 +153,10 @@ namespace prod_server.Services.DB
                 Id = a.Id,
                 Username = a.Username,
                 Email = a.Email,
-                FirstName = a.FirstName,
-                LastName = a.LastName,
+                Name = a.Name,
                 CreatedAt = a.CreatedAt,
                 UpdatedAt = a.UpdatedAt,
-                Address = a.Address,
-                City = a.City,
-                State = a.State,    
-                ZipCode = a.ZipCode,
+                ShippingDetails = a.ShippingDetails,
                 Notifications = a.Notifications
             };
         }

@@ -8,7 +8,7 @@ namespace prod_server.database
 {
     public class Context : DbContext
     {
-        public Context(DbContextOptions<Context> options) : base(options) {}
+        public Context(DbContextOptions<Context> options) : base(options) { }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Token> Tokens { get; set; }
         public DbSet<Product> Products { get; set; }
@@ -16,7 +16,7 @@ namespace prod_server.database
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Customer> Customers { get; set; }
-        public DbSet<Provider> Providers{ get; set; }
+        public DbSet<Provider> Providers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -82,6 +82,10 @@ namespace prod_server.database
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Quote>().OwnsOne(p => p.Name);
+            modelBuilder.Entity<Account>().OwnsOne(p => p.Name);
+            modelBuilder.Entity<Account>().OwnsOne(p => p.ShippingDetails);
+            modelBuilder.Entity<Customer>().OwnsOne(p => p.ShippingDetails);
+            modelBuilder.Entity<Provider>().OwnsOne(p => p.ShippingDetails);
         }
     }
 }
