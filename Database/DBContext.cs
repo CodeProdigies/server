@@ -17,6 +17,7 @@ namespace prod_server.database
         public DbSet<Order> Orders { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Provider> Providers { get; set; }
+        public DbSet<UploadedFile> UploadedFiles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -30,14 +31,12 @@ namespace prod_server.database
             modelBuilder.Entity<CartProduct>()
                 .HasOne(cp => cp.Quote)
                 .WithMany(q => q.Products)
-                .HasForeignKey(cp => cp.QuoteId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(cp => cp.QuoteId);
 
             modelBuilder.Entity<CartProduct>()
                 .HasOne(cp => cp.Product)
                 .WithMany(p => p.CartProducts)
-                .HasForeignKey(cp => cp.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(cp => cp.ProductId);
 
             modelBuilder.Entity<Notification>()
                 .HasOne(n => n.User)
@@ -48,8 +47,7 @@ namespace prod_server.database
             modelBuilder.Entity<Order>()
                 .HasMany(o => o.Products)
                 .WithOne(oi => oi.Order)
-                .HasForeignKey(oi => oi.OrderId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(oi => oi.OrderId);
 
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Product)
@@ -59,33 +57,48 @@ namespace prod_server.database
             modelBuilder.Entity<Provider>()
                 .HasMany(p => p.Products)
                 .WithOne(p => p.Provider)
-                .HasForeignKey(p => p.ProviderId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(p => p.ProviderId);
 
             modelBuilder.Entity<Customer>()
                     .HasMany(a => a.Accounts)
                     .WithOne(c => c.Customer)
-                    .HasForeignKey(c => c.CustomerId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .HasForeignKey(c => c.CustomerId);
 
             modelBuilder.Entity<Account>()
                 .HasOne(a => a.Customer)
                 .WithMany(c => c.Accounts)
-                .HasForeignKey(a => a.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(a => a.CustomerId);
 
             modelBuilder.Entity<Quote>()
                 .HasOne(q => q.Customer)
                 .WithMany(c => c.Quotes)
                 .HasForeignKey(q => q.CustomerId)
-                .IsRequired(false) // Indicate that the relationship is optional
-                .OnDelete(DeleteBehavior.Cascade);
+                .IsRequired(false); // Indicate that the relationship is optional
+
+
+            /// Uploaded Files
+            /// 
+            // Configure the relationship between UploadedFile and Product
+            modelBuilder.Entity<UploadedFile>()
+                .HasOne<Product>() // Assuming UploadedFile has an optional relationship with Product
+                .WithMany(p => p.Files) // Assuming a Product can have many UploadedFiles
+                .HasForeignKey(uf => uf.ProductId) // Foreign key in UploadedFile pointing to Product
+                .OnDelete(DeleteBehavior.Cascade);   // Cascade delete if Product is deleted
+            
+            // Configure the relationship between UploadedFile and Customer
+            modelBuilder.Entity<UploadedFile>()
+                .HasOne<Customer>() // Assuming UploadedFile has an optional relationship with Customer
+                .WithMany(c => c.Files) // Assuming a Customer can have many UploadedFiles
+                .HasForeignKey(uf => uf.CustomerId) // Foreign key in UploadedFile pointing to Customer
+                .OnDelete(DeleteBehavior.Cascade);   // Cascade delete if Product is deleted
 
             modelBuilder.Entity<Quote>().OwnsOne(p => p.Name);
             modelBuilder.Entity<Account>().OwnsOne(p => p.Name);
             modelBuilder.Entity<Account>().OwnsOne(p => p.ShippingDetails);
             modelBuilder.Entity<Customer>().OwnsOne(p => p.ShippingDetails);
             modelBuilder.Entity<Provider>().OwnsOne(p => p.ShippingDetails);
+
+
         }
     }
 }

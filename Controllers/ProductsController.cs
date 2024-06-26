@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using prod_server.Classes;
+using prod_server.Classes.Others;
 using prod_server.Entities;
+using prod_server.Services;
 using prod_server.Services.DB;
 using System.Security.Claims;
 
@@ -14,11 +16,13 @@ namespace prod_server.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly IProductService _productService;
+        private readonly IUtilitiesService _utilitiesService;
 
-        public ProductsController(IAccountService accountService, IProductService productService)
+        public ProductsController(IAccountService accountService, IProductService productService, IUtilitiesService utilitiesService)
         {
             _accountService = accountService;
             _productService = productService;
+            _utilitiesService = utilitiesService;
         }
 
         [AllowAnonymous]
@@ -42,9 +46,16 @@ namespace prod_server.Controllers
         [ProducesResponseType(typeof(IResponse<Product>), 400)]
         [ProducesResponseType(typeof(IResponse<Product>), 401)]
         [ProducesResponseType(typeof(IResponse<Product>), 200)]
-        public async Task<IResponse<Product>> Create(Product? product)
+        public async Task<IResponse<Product>> Create([FromForm] CreateProductRequest request)
         {
+            var product = request.Product;
             if (product == null) return BadRequest<Product>("failed_create_product");
+
+            if(request.Files != null)
+            {
+                var hasDuplicateFileName = request.Files.GroupBy(x => x.FileName).Any(g => g.Count() > 1);
+                if (hasDuplicateFileName == true) return BadRequest<Product>("failed_create_product_duplicate_file_name");
+            } 
 
             string? userId = this.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var account = await _accountService.GetById(userId!);
@@ -52,7 +63,7 @@ namespace prod_server.Controllers
 
             // Check if user is admin. When we do the roles.
 
-            var newProduct = await _productService.Create(product);
+            var newProduct = await _productService.Create(request);
             if (newProduct == null) return UnexpectedError<Product>("failed_create_product");
 
             return Ok<Product>("product_created_successfully", newProduct);
@@ -130,6 +141,21 @@ namespace prod_server.Controllers
             if (products == null) return UnexpectedError<List<Product>>("failed_retrieve_product");
 
             return Ok<List<Product>>("products_retrieved_successfully", products);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("/products/image")]
+        [ProducesResponseType(typeof(IResponse<Product>), 500)]
+        [ProducesResponseType(typeof(IResponse<Product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<Stream> GetProductImage(Guid productId, string image)
+        {
+
+            var file = await _utilitiesService.GetFile($"/Products/{productId}/{image}");
+
+            if (file == null) return null;
+
+            return file.Value.Content;
         }
     }
 }

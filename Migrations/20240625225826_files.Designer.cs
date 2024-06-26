@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using prod_server.database;
@@ -11,9 +12,11 @@ using prod_server.database;
 namespace prod_server.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240625225826_files")]
+    partial class files
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,6 +69,34 @@ namespace prod_server.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItem");
+                });
+
+            modelBuilder.Entity("prod_server.Classes.Others.UploadedFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("UploadedFile");
                 });
 
             modelBuilder.Entity("prod_server.Entities.Account", b =>
@@ -442,47 +473,6 @@ namespace prod_server.Migrations
                     b.ToTable("Tokens");
                 });
 
-            modelBuilder.Entity("prod_server.Entities.UploadedFile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("ContentType")
-                        .HasColumnType("text")
-                        .HasColumnName("content_type");
-
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("customer_id");
-
-                    b.Property<string>("FilePath")
-                        .HasColumnType("text")
-                        .HasColumnName("file_path");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<Guid?>("ProductId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("product_id");
-
-                    b.Property<long>("Size")
-                        .HasColumnType("bigint")
-                        .HasColumnName("size");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("UploadedFiles");
-                });
-
             modelBuilder.Entity("prod_server.Classes.OrderItem", b =>
                 {
                     b.HasOne("prod_server.Entities.Order", "Order")
@@ -502,11 +492,23 @@ namespace prod_server.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("prod_server.Classes.Others.UploadedFile", b =>
+                {
+                    b.HasOne("prod_server.Entities.Customer", null)
+                        .WithMany("Files")
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("prod_server.Entities.Product", null)
+                        .WithMany("Files")
+                        .HasForeignKey("ProductId");
+                });
+
             modelBuilder.Entity("prod_server.Entities.Account", b =>
                 {
                     b.HasOne("prod_server.Entities.Customer", "Customer")
                         .WithMany("Accounts")
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.OwnsOne("prod_server.Classes.Common.Name", "Name", b1 =>
                         {
@@ -584,11 +586,13 @@ namespace prod_server.Migrations
                 {
                     b.HasOne("prod_server.Entities.Product", "Product")
                         .WithMany("CartProducts")
-                        .HasForeignKey("ProductId");
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("prod_server.Entities.Quote", "Quote")
                         .WithMany("Products")
-                        .HasForeignKey("QuoteId");
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Product");
 
@@ -658,7 +662,8 @@ namespace prod_server.Migrations
                 {
                     b.HasOne("prod_server.Entities.Provider", "Provider")
                         .WithMany("Products")
-                        .HasForeignKey("ProviderId");
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Provider");
                 });
@@ -706,7 +711,8 @@ namespace prod_server.Migrations
                 {
                     b.HasOne("prod_server.Entities.Customer", "Customer")
                         .WithMany("Quotes")
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.OwnsOne("prod_server.Classes.Common.Name", "Name", b1 =>
                         {
@@ -742,19 +748,6 @@ namespace prod_server.Migrations
 
                     b.Navigation("Name")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("prod_server.Entities.UploadedFile", b =>
-                {
-                    b.HasOne("prod_server.Entities.Customer", null)
-                        .WithMany("Files")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("prod_server.Entities.Product", null)
-                        .WithMany("Files")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("prod_server.Entities.Account", b =>

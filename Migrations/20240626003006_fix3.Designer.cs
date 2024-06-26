@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using prod_server.database;
@@ -11,9 +12,11 @@ using prod_server.database;
 namespace prod_server.Migrations
 {
     [DbContext(typeof(Context))]
-    partial class ContextModelSnapshot : ModelSnapshot
+    [Migration("20240626003006_fix3")]
+    partial class fix3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -506,7 +509,8 @@ namespace prod_server.Migrations
                 {
                     b.HasOne("prod_server.Entities.Customer", "Customer")
                         .WithMany("Accounts")
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.OwnsOne("prod_server.Classes.Common.Name", "Name", b1 =>
                         {
@@ -584,11 +588,13 @@ namespace prod_server.Migrations
                 {
                     b.HasOne("prod_server.Entities.Product", "Product")
                         .WithMany("CartProducts")
-                        .HasForeignKey("ProductId");
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("prod_server.Entities.Quote", "Quote")
                         .WithMany("Products")
-                        .HasForeignKey("QuoteId");
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Product");
 
@@ -658,7 +664,8 @@ namespace prod_server.Migrations
                 {
                     b.HasOne("prod_server.Entities.Provider", "Provider")
                         .WithMany("Products")
-                        .HasForeignKey("ProviderId");
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Provider");
                 });
@@ -706,7 +713,8 @@ namespace prod_server.Migrations
                 {
                     b.HasOne("prod_server.Entities.Customer", "Customer")
                         .WithMany("Quotes")
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.OwnsOne("prod_server.Classes.Common.Name", "Name", b1 =>
                         {

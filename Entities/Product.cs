@@ -26,9 +26,7 @@ namespace prod_server.Entities
         public decimal? Cost { get; set; } = 0;
         [Column("price")]
         public decimal Price { get; set; }
-        [AllowNull]
-        [Column("image")]
-        public string? Image { get; set; }
+        public virtual List<UploadedFile>? Files { get; set; } = [];
         [Column("category")]
         public ProductsCategory? Category { get; set; }
         [NotMapped]
@@ -44,7 +42,7 @@ namespace prod_server.Entities
 
         public override string ToString()
         {
-            return $"Product: {Name} - {Description} - {Price} - {Image} - {Category}";
+            return $"Product: {Name} - {Description} - {Price} - {Category}";
         }
     }
 

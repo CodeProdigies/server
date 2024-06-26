@@ -9,6 +9,8 @@ namespace prod_server.Services.DB
     public interface IProductService : IService<Order>
     {
         public Task<Product> Create(Product product);
+
+        public Task<Product> Create(CreateProductRequest request);
         public Task<Product?> GetById(Guid id);
         public Task<Product?> GetBySKU(string sku);
         public Task<List<Product>> GetAll();
@@ -29,18 +31,40 @@ namespace prod_server.Services.DB
         {
             await _database.Products.AddAsync(product);
             var response = await _database.SaveChangesAsync();
+            return product;
+        }
 
-            if (response == 1 && product.Image != null)
+        public async Task<Product> Create(CreateProductRequest request)
+        {
+            var product = request.Product;
+            if(request.Files != null && request.Files.Count > 0)
             {
-                await _utilitiesService.uploadImage(product.Image, $"{product.SKU}.png");
+                if(product.Files == null) product.Files = new List<UploadedFile>();
+                foreach (var file in request.Files)
+                {
+                    // Save files
+                    var path = $"/Products/{request.Product.Id}/{file.FileName}";
+
+                    product.Files.Add(new UploadedFile(file, path));
+
+                    var result = await _utilitiesService.UploadFile(file, path);
+                    
+                }
+   
             }
+
+            await _database.Products.AddAsync(product);
+            var response = await _database.SaveChangesAsync();
             return product;
         }
 
         public Task<Product?> GetById(Guid id)
         {
             _database.ChangeTracker.LazyLoadingEnabled = false;
-            return _database.Products.Include(x => x.Provider).FirstOrDefaultAsync(x => x.Id == id);
+            return _database.Products
+                .Include(x => x.Provider)
+                .Include(a => a.Files)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
         public Task<Product?> GetBySKU(string sku)
         {
@@ -48,14 +72,22 @@ namespace prod_server.Services.DB
         }
         public Task<List<Product>> GetAll()
         {
-            return _database.Products.ToListAsync();
+            return _database.Products.Include(a => a.Files).ToListAsync();
         }
         public Task<int> Update(Product product)
         {
-            // Assuming product is tracked by the context (either attached or loaded)
-            _database.Products.Update(product);
+            try
+            {
+                // Assuming product is tracked by the context (either attached or loaded)
+                _database.Products.Update(product);
 
-            return _database.SaveChangesAsync();
+                return _database.SaveChangesAsync();
+
+            } 
+            catch (System.Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public async Task<int> Delete(Guid id)
@@ -64,7 +96,9 @@ namespace prod_server.Services.DB
 
             if (productToDelete != null)
             {
+                _database.UploadedFiles.RemoveRange(productToDelete.Files);
                 _database.Products.Remove(productToDelete);
+
                 return await _database.SaveChangesAsync();
             }
             return 0; // Return 0 if the product with the specified id is not found
