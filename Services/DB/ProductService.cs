@@ -17,6 +17,7 @@ namespace prod_server.Services.DB
         public Task<int> Update(Product product, List<UploadedFile>? files = null);
         public Task<int> AddProductImages(Guid ProductId, List<UploadedFile> newfiles);
         public Task<int> Delete(Guid id);
+        public Task<int> Archive(Guid id, bool archive);
         public Task<List<Product>> GetLastest(int quantity);
     }
 
@@ -146,21 +147,27 @@ namespace prod_server.Services.DB
         {
             var productToDelete = await _database.Products.FindAsync(id);
 
+            _database.UploadedFiles.RemoveRange(productToDelete.Files);
+            await _database.SaveChangesAsync();
+
             if (productToDelete != null)
             {
 
                 // Check if customer has any relationships with other entities
-                var relatedEntities = _database.Entry(productToDelete)
+                var navigations = _database.Entry(productToDelete)
                     .Metadata
                     .GetNavigations()
-                    .Where(n => !n.IsCollection)
-                    .Select(n => _database.Entry(productToDelete)?.Reference(n.Name)?.TargetEntry?.Entity)
-                    .ToList();
+                    .Where(n => !n.IsCollection);
 
-                if (relatedEntities.Any())
+                foreach (var navigation in navigations)
                 {
-                    // Customer has related entities, handle accordingly (throw exception, log, etc.)
-                    throw new InvalidOperationException("Product cannot be deleted because it has related entities.");
+                    var referenceEntry = _database.Entry(productToDelete).Reference(navigation.Name);
+                    await referenceEntry.LoadAsync();
+                    if (referenceEntry.CurrentValue != null)
+                    {
+                        // Product has related entities, handle accordingly (throw exception, log, etc.)
+                        throw new InvalidOperationException("Product cannot be deleted because it has related entities.");
+                    }
                 }
 
                 _database.UploadedFiles.RemoveRange(productToDelete.Files);
@@ -169,6 +176,17 @@ namespace prod_server.Services.DB
                 return await _database.SaveChangesAsync();
             }
             return 0; // Return 0 if the product with the specified id is not found
+        }
+
+        public async Task<int> Archive(Guid id, bool archive)
+        {
+            var productToDelete = await _database.Products.FindAsync(id);
+            if (productToDelete == null) return 0;
+
+            productToDelete.isArchived = archive;
+            _database.Products.Update(productToDelete);
+            return await _database.SaveChangesAsync();
+
         }
 
         public Task<List<Product>> GetLastest(int quantity)

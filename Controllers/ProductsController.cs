@@ -114,7 +114,7 @@ namespace prod_server.Controllers
 
             // Check if user is admin. When we do the roles.
 
-            var newProduct = await _productService.Delete(id);
+            var newProduct = await _productService.Archive(id, true);
 
             if (newProduct == 0) return BadRequest<string>("failed_delete_product_notfound");
 
