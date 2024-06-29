@@ -19,6 +19,7 @@ namespace prod_server.Entities
         public virtual List<Quote> Quotes { get; set; } = [];
         public virtual List<Account> Accounts { get; set; } = [];
         public virtual List<UploadedFile> Files { get; set; } = [];
+        public bool isArchived { get; set; } = false;   
 
         public Customer()
         {

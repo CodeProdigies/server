@@ -20,6 +20,8 @@ namespace prod_server.Entities
         [ForeignKey("CustomerId")]
         public virtual Customer? Customer { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        [Column("is_archived")]
+        public bool isArchived { get; set; } = false;
 
         
         public Order()

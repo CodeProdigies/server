@@ -67,7 +67,17 @@ namespace prod_server.Services.DB
 
             if (!includePassword)
             {
-                query = query.Select(ExcludePassword());
+                query = query.AsNoTracking().Select(a => new Account
+                {
+                    Id = a.Id,
+                    Username = a.Username,
+                    Email = a.Email,
+                    Name = a.Name,
+                    CreatedAt = a.CreatedAt,
+                    UpdatedAt = a.UpdatedAt,
+                    ShippingDetails = a.ShippingDetails,
+                    Notifications = a.Notifications
+                });
             }
 
             return query.ToListAsync();
@@ -91,6 +101,7 @@ namespace prod_server.Services.DB
             return _database.Accounts
                     .Include(a => a.Notifications)
                     .Include(b => b.Customer)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
@@ -144,21 +155,6 @@ namespace prod_server.Services.DB
                 return await _database.SaveChangesAsync();
             }
             return 0; // Return 0 if the product with the specified id is not found
-        }
-
-        private Expression<Func<Account, Account>> ExcludePassword()
-        {
-            return a => new Account
-            {
-                Id = a.Id,
-                Username = a.Username,
-                Email = a.Email,
-                Name = a.Name,
-                CreatedAt = a.CreatedAt,
-                UpdatedAt = a.UpdatedAt,
-                ShippingDetails = a.ShippingDetails,
-                Notifications = a.Notifications
-            };
         }
     }
 }

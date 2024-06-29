@@ -37,6 +37,8 @@ namespace prod_server.Entities
         public int? ProviderId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        [Column("is_archived")]
+        public bool isArchived { get; set; } = false;
 
         public Product() { }
 

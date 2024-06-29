@@ -60,10 +60,18 @@ namespace prod_server.Controllers
         [HttpDelete("customer/{id}")]
         public async Task<IResponse<bool>> DeleteCustomer(int id)
         {
-            var result = await _customerService.DeleteCustomer(id);
-            var deleted = result > 0;
-            var message = deleted ? "customer_deleted_successfully" : "customer_not_found";
-            return Ok<bool>(message, deleted);
+            try
+            {
+
+                var result = await _customerService.DeleteCustomer(id);
+                var deleted = result > 0;
+                var message = deleted ? "customer_deleted_successfully" : "customer_not_found";
+                return Ok<bool>(message, deleted);
+            } catch(Exception err)
+            {
+
+               return BadRequest<bool>(err.Message, false);
+            }
         }
 
         [HttpGet("customer/{id}/orders")]

@@ -38,32 +38,16 @@ namespace prod_server.Services.DB
         private IQueryable<Order> GetOrderWithProducts()
         {
             return _database.Orders
-                .Select(q => new Order
-                {
-                    Id = q.Id,
-                    CreatedAt = q.CreatedAt,
-                    CustomerId = q.CustomerId,
-                    Customer = q.Customer,
-                    // Include other Quote properties here...
-                    Products = q.Products.Select(cp => new OrderItem
-                    {
-                        Id = cp.Id,
-                        ProductId = cp.ProductId,
-                        Quantity = cp.Quantity,
-                        Product = cp.Product,
-                        IsSold = cp.IsSold,
-                        Total = cp.Total,
-                        OrderId = cp.OrderId,
-                        SellPrice = cp.SellPrice,
-                        BuyPrice = cp.BuyPrice
-                    }).ToList()
-                });
+                    .Include(o => o.Products)
+                    .ThenInclude(cp => cp.Product)
+                    .Where(b => b.isArchived == false);
         }
 
         public Task<Order?> Get(int id)
         {
             _database.ChangeTracker.LazyLoadingEnabled = false;
-            return GetOrderWithProducts().FirstOrDefaultAsync(q => q.Id == id);
+            return  GetOrderWithProducts()
+                    .FirstOrDefaultAsync(o => o.Id == id);
         }
 
         public Task<List<Order>> GetFromCustomerId(int customerId)
@@ -75,10 +59,24 @@ namespace prod_server.Services.DB
 
         async public Task Delete(int id)
         {
-            var quote = _database.Orders.FirstOrDefault(quote => quote.Id == id);
-            if (quote == null) throw new Exception("Quote not found.");
+            var order = _database.Orders.FirstOrDefault(order => order.Id == id);
+            if (order == null) throw new Exception("Order not found.");
 
-            _database.Remove(quote);
+            // Check if customer has any relationships with other entities
+            var relatedEntities = _database.Entry(order)
+                .Metadata
+                .GetNavigations()
+                .Where(n => !n.IsCollection)
+                .Select(n => _database.Entry(order)?.Reference(n.Name)?.TargetEntry?.Entity)
+                .ToList();
+
+            if (relatedEntities.Any())
+            {
+                // Customer has related entities, handle accordingly (throw exception, log, etc.)
+                throw new InvalidOperationException("Order cannot be deleted because it has related entities.");
+            }
+
+            _database.Remove(order);
             await _database.SaveChangesAsync();
         }
 
@@ -96,7 +94,7 @@ namespace prod_server.Services.DB
 
         async public Task<List<Order>> GetByCustomer(int id)
         {
-            return await _database.Orders.Where(o => o.CustomerId == id).ToListAsync();
+            return await _database.Orders.Where(o => o.CustomerId == id && o.isArchived == false).ToListAsync();
         }
 
     }

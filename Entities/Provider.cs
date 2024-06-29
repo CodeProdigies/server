@@ -17,5 +17,6 @@ namespace prod_server.Entities
         public virtual List<Product> Products { get; set; }
         public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+        public bool isArchived { get; set; } = false;
     }
 }

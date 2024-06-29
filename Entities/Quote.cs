@@ -32,6 +32,8 @@ namespace prod_server.Entities
         public virtual Customer? Customer { get; set; }
         [ForeignKey("CustomerId")]
         public int? CustomerId { get; set; }
+        [Column("is_archived")]
+        public bool isArchived { get; set; } = false;
     }
 }
 

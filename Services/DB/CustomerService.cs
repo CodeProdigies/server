@@ -43,14 +43,30 @@ namespace prod_server.Services.DB
 
         public async Task<int> DeleteCustomer(int id)
         {
-            var customerToDelete = await base._database.Customers.FindAsync(id);
+            var customerToDelete = await _database.Customers.FindAsync(id);
 
             if (customerToDelete != null)
             {
-                base._database.Customers.Remove(customerToDelete);
-                return await base._database.SaveChangesAsync();
+                // Check if customer has any relationships with other entities
+                var relatedEntities = _database.Entry(customerToDelete)
+                    .Metadata
+                    .GetNavigations()
+                    .Where(n => !n.IsCollection)
+                    .Select(n => _database.Entry(customerToDelete)?.Reference(n.Name)?.TargetEntry?.Entity)
+                    .ToList();
+
+                if (relatedEntities.Any())
+                {
+                    // Customer has related entities, handle accordingly (throw exception, log, etc.)
+                    throw new InvalidOperationException("Customer cannot be deleted because it has related entities.");
+                }
+
+                // No related entities found, proceed with deletion
+                _database.Customers.Remove(customerToDelete);
+                return await _database.SaveChangesAsync();
             }
-            return 0; // Return 0 if the product with the specified id is not found
+
+            return 0; // Return 0 if the customer with the specified id is not found
         }
     }
 }

@@ -76,15 +76,16 @@ namespace prod_server.Services.DB
             return _database.Products
                 .Include(x => x.Provider)
                 .Include(a => a.Files)
+                .Where(b => b.isArchived == false)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
         public Task<Product?> GetBySKU(string sku)
         {
-            return _database.Products.FirstOrDefaultAsync(x => x.SKU == sku);
+            return _database.Products.Where(b => b.isArchived == false).FirstOrDefaultAsync(x => x.SKU == sku);
         }
         public Task<List<Product>> GetAll()
         {
-            return _database.Products.Include(a => a.Files).ToListAsync();
+            return _database.Products.Include(a => a.Files).Where(b => b.isArchived == false).ToListAsync();
         }
 
         public Task<int> AddProductImages(Guid ProductId, List<UploadedFile> newfiles)
@@ -147,6 +148,21 @@ namespace prod_server.Services.DB
 
             if (productToDelete != null)
             {
+
+                // Check if customer has any relationships with other entities
+                var relatedEntities = _database.Entry(productToDelete)
+                    .Metadata
+                    .GetNavigations()
+                    .Where(n => !n.IsCollection)
+                    .Select(n => _database.Entry(productToDelete)?.Reference(n.Name)?.TargetEntry?.Entity)
+                    .ToList();
+
+                if (relatedEntities.Any())
+                {
+                    // Customer has related entities, handle accordingly (throw exception, log, etc.)
+                    throw new InvalidOperationException("Product cannot be deleted because it has related entities.");
+                }
+
                 _database.UploadedFiles.RemoveRange(productToDelete.Files);
                 _database.Products.Remove(productToDelete);
 
@@ -158,7 +174,7 @@ namespace prod_server.Services.DB
         public Task<List<Product>> GetLastest(int quantity)
         {
             if (quantity > 25) quantity = 25;
-            return _database.Products.OrderByDescending(x => x.CreatedAt).Take(quantity).ToListAsync();
+            return _database.Products.OrderByDescending(x => x.CreatedAt).Where(b => b.isArchived == false).Take(quantity).ToListAsync();
         }
     }
 }

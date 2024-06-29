@@ -24,7 +24,7 @@ namespace prod_server.Services.DB
 
         public Task<Provider?> Get(int id)
         {
-            return _database.Providers.FirstOrDefaultAsync(x => x.Id == id);
+            return _database.Providers.Where(x => x.isArchived == false).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public Task<List<Provider>> GetAll()
@@ -44,6 +44,20 @@ namespace prod_server.Services.DB
             if (provider == null)
             {
                 return 0;
+            }
+
+            // Check if customer has any relationships with other entities
+            var relatedEntities = _database.Entry(provider)
+                .Metadata
+                .GetNavigations()
+                .Where(n => !n.IsCollection)
+                .Select(n => _database.Entry(provider)?.Reference(n.Name)?.TargetEntry?.Entity)
+                .ToList();
+
+            if (relatedEntities.Any())
+            {
+                // Customer has related entities, handle accordingly (throw exception, log, etc.)
+                throw new InvalidOperationException("Provider cannot be deleted because it has related entities.");
             }
             _database.Providers.Remove(provider);
             return await _database.SaveChangesAsync();
