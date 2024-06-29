@@ -26,7 +26,7 @@ namespace prod_server.Entities
         public decimal? Cost { get; set; } = 0;
         [Column("price")]
         public decimal Price { get; set; }
-        public virtual List<UploadedFile>? Files { get; set; } = [];
+        public virtual List<UploadedFile> Files { get; set; } = [];
         [Column("category")]
         public ProductsCategory? Category { get; set; }
         [NotMapped]

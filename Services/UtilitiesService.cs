@@ -17,6 +17,7 @@ namespace prod_server.Services
         public Task<Azure.Response<BlobContentInfo>> UploadImage(string Image, string imageName);
         public Task<Azure.Response<BlobContentInfo>> UploadFile(IFormFile file, string fileInfo);
         public Task<Azure.Response<BlobDownloadInfo>> GetFile(string filePath);
+        public Task<Azure.Response<bool>> DeleteFile(string filePath);
 
     }
     public class UtilitiesService : IUtilitiesService
@@ -102,6 +103,14 @@ namespace prod_server.Services
             var blobClient = containerClient.GetBlobClient(filePath);
             return await blobClient.DownloadAsync();
         }
+
+        public async Task<Azure.Response<bool>> DeleteFile(string filePath)
+        {
+            var containerClient = new BlobContainerClient(STORAGE_CONNECTION_LINK, CONTAINER_NAME);
+            var blobClient = containerClient.GetBlobClient(filePath);
+            return await blobClient.DeleteIfExistsAsync();
+        }
     }
+
 
 }

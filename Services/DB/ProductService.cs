@@ -14,7 +14,8 @@ namespace prod_server.Services.DB
         public Task<Product?> GetById(Guid id);
         public Task<Product?> GetBySKU(string sku);
         public Task<List<Product>> GetAll();
-        public Task<int> Update(Product product);
+        public Task<int> Update(Product product, List<UploadedFile>? files = null);
+        public Task<int> AddProductImages(Guid ProductId, List<UploadedFile> newfiles);
         public Task<int> Delete(Guid id);
         public Task<List<Product>> GetLastest(int quantity);
     }
@@ -43,11 +44,22 @@ namespace prod_server.Services.DB
                 foreach (var file in request.Files)
                 {
                     // Save files
-                    var path = $"/Products/{request.Product.Id}/{file.FileName}";
+                    Guid FileGuid = Guid.NewGuid();
+                    var fileName = $"{FileGuid} - {file.FileName}";
+                    var fileData = new UploadedFile()
+                    {
+                        ProductId = product.Id,
+                        Id= FileGuid,   
+                        ContentType = file.ContentType,
+                        Name = file.FileName,
+                        FilePath = $"/Products/{product.Id}/{fileName}",
+                        Size = file.Length
 
-                    product.Files.Add(new UploadedFile(file, path));
+                    };
 
-                    var result = await _utilitiesService.UploadFile(file, path);
+                    product.Files.Add(fileData);
+
+                    var result = await _utilitiesService.UploadFile(file, fileData.FilePath);
                     
                 }
    
@@ -74,10 +86,49 @@ namespace prod_server.Services.DB
         {
             return _database.Products.Include(a => a.Files).ToListAsync();
         }
-        public Task<int> Update(Product product)
+
+        public Task<int> AddProductImages(Guid ProductId, List<UploadedFile> newfiles)
         {
             try
             {
+                // add the non existant files to the database
+                foreach (var file in newfiles)
+                {
+                    if (file.ProductId == null)
+                    {
+                        file.ProductId = ProductId;
+                    }
+                }
+                _database.UploadedFiles.AddRange(newfiles);
+
+                return _database.SaveChangesAsync();
+            }
+            catch (System.Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public Task<int> Update(Product product, List<UploadedFile>? newfiles = null)
+        {
+            try
+            {
+
+                if(newfiles != null)
+                {
+                    // add the non existant files to the database
+                    foreach (var file in newfiles)
+                    {
+                        if (file.ProductId == null) { 
+                            file.ProductId = product.Id;
+                        }
+                    }
+                   if (newfiles.Count > 0) product.Files.AddRange(newfiles);
+
+                   _database.UploadedFiles.AddRange(newfiles);
+
+                }
+
                 // Assuming product is tracked by the context (either attached or loaded)
                 _database.Products.Update(product);
 

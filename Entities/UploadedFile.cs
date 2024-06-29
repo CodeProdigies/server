@@ -30,7 +30,7 @@ namespace prod_server.Entities
         [Column("customer_id")]
         public int? CustomerId { get; set; }
         [Column("file_path")]
-        public string? FilePath { get; set; }
+        public string FilePath { get; set; }
         [Column("size")]
         public long Size { get; set; }
 

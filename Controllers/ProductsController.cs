@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using prod_server.Classes;
 using prod_server.Classes.Others;
@@ -84,11 +85,20 @@ namespace prod_server.Controllers
             if (account == null) return Unauthorized<Product>("failed_updat3e_account");
 
             // Check if user is admin. When we do the roles.
+            try
+            {
+                product.Files = new List<UploadedFile>();
+                var newProduct = await _productService.Update(product);
+                if (newProduct == 0) return UnexpectedError<Product>("failed_update_product");
 
-            var newProduct = await _productService.Update(product);
-            if (newProduct == null) return UnexpectedError<Product>("failed_update_product");
+                return Ok<Product>("product_update_successfully", product);
 
-            return Ok<Product>("product_update_successfully", product);
+            } catch(Exception ex)
+            {
+
+               return UnexpectedError<Product>($"failed_update_product: {ex.Message}");
+            }
+
         }
 
         [HttpDelete("/products/{id}")]
@@ -150,12 +160,125 @@ namespace prod_server.Controllers
         [ProducesResponseType(typeof(IResponse<Product>), 200)]
         public async Task<Stream> GetProductImage(Guid productId, string image)
         {
+            try { 
+                var product = await _productService.GetById(productId);
+                if (product == null) return null;
 
-            var file = await _utilitiesService.GetFile($"/Products/{productId}/{image}");
+                var file = await _utilitiesService.GetFile($"/Products/{productId}/{image}");
 
-            if (file == null) return null;
+                if (file == null) return null;
 
-            return file.Value.Content;
+                return file.Value.Content;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
+
+        [HttpPost("{productId}/images")]
+        [ProducesResponseType(typeof(IResponse<Product>), 400)]
+        [ProducesResponseType(typeof(IResponse<Product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<IResponse<List<UploadedFile>>> UploadProductImages(UploadProductFiles request)
+        {
+            try
+            {
+                var product = await _productService.GetById(request.ProductId);
+                if (product == null) return BadRequest<List<UploadedFile>>("failed_upload_product_notfound");
+
+                var uploadedFiles = new List<UploadedFile>();
+
+                foreach (var item in request.Files)
+                {
+                    if (item.Length == 0) return BadRequest<List<UploadedFile>>("failed_upload_product_image_empty");
+                    if (item.Length > 5 * 1024 * 1024) return BadRequest<List<UploadedFile>>("failed_upload_product_image_too_large");
+                    if (!item.ContentType.Contains("image")) return BadRequest<List<UploadedFile>>("failed_upload_product_image_invalid_format");
+
+                    Guid FileGuid = Guid.NewGuid();
+                    var fileName = $"{FileGuid} - {item.FileName}";
+
+                    var uploadResult = await _utilitiesService.UploadFile(item, $"/Products/{request.ProductId}/{fileName}");
+                    if (uploadResult.GetRawResponse().Status != 201) return BadRequest<List<UploadedFile>>("failed_upload_product_image");
+
+                    uploadedFiles.Add(new UploadedFile(){
+                        ContentType = item.ContentType,
+                        Name = fileName,
+                        Id= FileGuid,
+                        FilePath = $"/Products/{request.ProductId}/{fileName}",
+                        Size = item.Length  
+
+                    });
+                }
+
+
+                if (uploadedFiles.Count == 0) return BadRequest<List<UploadedFile>>("failed_upload_product_images");
+                await _productService.AddProductImages(product.Id!.Value, uploadedFiles);
+                
+                return Ok<List<UploadedFile>>("product_images_uploaded_successfully", uploadedFiles);
+
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details to help with debugging
+                // Consider using a logging framework or service
+                return UnexpectedError<List<UploadedFile>>($"failed_upload_product_image: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("{productId}/image/{image}")]
+        [ProducesResponseType(typeof(IResponse<Product>), 400)]
+        [ProducesResponseType(typeof(IResponse<Product>), 401)]
+        [ProducesResponseType(typeof(IResponse<Product>), 200)]
+        public async Task<IResponse<bool>> DeleteProductImage(Guid productId, string? image)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(image)) return BadRequest<bool>("image_name_invalid");
+
+                var product = await _productService.GetById(productId);
+                if (product == null) return BadRequest<bool>("failed_delete_product_notfound");
+
+                var file = product.Files.FirstOrDefault(x => x.Name == image);
+                if(file == null) return BadRequest<bool>("failed_delete_product_image_notfound");
+                 
+                var deletionResult = await _utilitiesService.DeleteFile(file.FilePath!);
+                if (!deletionResult) return BadRequest<bool>("failed_delete_file");
+
+                product.Files.Remove(file);
+                // Update the product if the file was successfully deleted
+                await _productService.Update(product);
+
+                return Ok<bool>("product_image_deleted_successfully", true);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception details to help with debugging
+                // Consider using a logging framework or service
+                return UnexpectedError<bool>($"failed_delete_product_image: {ex.Message}");
+            }
+        }
+
+        
+
+
+        //[HttpGet("/products/images")]
+        //[ProducesResponseType(typeof(IResponse<Product>), 500)]
+        //[ProducesResponseType(typeof(IResponse<Product>), 401)]
+        //[ProducesResponseType(typeof(IResponse<Product>), 200)]
+        //public async Task<IResponse<List<Stream>>> GetProductImages(Guid productId)
+        //{
+        //    var product = await _productService.GetById(productId);
+        //    if (product == null) return new IResponse<List<Stream>>() { Payload = new List<Stream>() };
+
+
+        //    var fileStreams = await Task.WhenAll(product.Files.Select(async file =>
+        //         await _utilitiesService.GetFile($"file.FilePath")
+        //     ));
+
+        //    var validStreams = fileStreams.Where(fs => fs != null).Select(fs => fs.Value.Content).ToList();
+
+        //    return new IResponse<List<Stream>> { Payload = validStreams };
+        //}
     }
 }
